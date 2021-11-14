@@ -17,10 +17,10 @@ touch /etc/openvpn/server2.conf
 username=`head -n1 $1 | tail -1`   
 password=`head -n2 $1 | tail -1`
 
-HOST='64.20.56.162'
-USER='hostingp_psytech'
-PASS='F1005r90@'
-DB='hostingp_psytech'
+HOST='mysql1.blazingfast.io'
+USER='vpnngpin_mtkpanel'
+PASS='panelmtk@'
+DB='vpnngpin_mtkpanel'
 
 Query="SELECT user_name FROM users WHERE user_name='$username' AND auth_vpn=md5('$password') AND status='live' AND is_freeze=0 AND is_ban=0 AND (duration > 0 OR vip_duration > 0 OR private_duration > 0)"
 user_name=`mysql -u $USER -p$PASS -D $DB -h $HOST -sN -e "$Query"`
