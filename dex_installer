@@ -368,7 +368,7 @@ mySquid
 
  sed -i "s|SquidCacheHelper|$Proxy_Port1|g" /etc/squid/squid.conf
  sed -i "s|SquidCacheHelper|$Proxy_Port2|g" /etc/squid/squid.conf
- echo-e " Mediatek Restart Squid"
+ echo -e " Mediatek Restart Squid"
  systemctl restart squid
 
 
