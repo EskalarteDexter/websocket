@@ -163,9 +163,6 @@ function  Instupdate() {
  # Installing some important machine essentials
  apt-get install nano wget curl zip unzip tar gzip p7zip-full bc rc openssl cron net-tools dnsutils dos2unix screen bzip2 ccrypt -y
 
- # Now installing all our wanted services
- apt-get install dropbear stunnel4 privoxy ca-certificates nginx ruby apt-transport-https lsb-release squid screenfetch -y
-
  # Installing all required packages to install Webmin
  apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python dbus libxml-parser-perl -y
  apt-get install shared-mime-info jq -y
@@ -175,13 +172,6 @@ function  Instupdate() {
 
  # Trying to remove obsolette packages after installation
  apt-get autoremove -y
-
- # Installing OpenVPN by pulling its repository inside sources.list file
- #rm -rf /etc/apt/sources.list.d/openvpn*
- echo "deb http://build.openvpn.net/debian/openvpn/stable $(lsb_release -sc) main" >/etc/apt/sources.list.d/openvpn.list && apt-key del E158C569 && wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add -
- wget -qO security-openvpn-net.asc "https://keys.openpgp.org/vks/v1/by-fingerprint/F554A3687412CFFEBDEFE0A312F5F7B42F2B01E7" && gpg --import security-openvpn-net.asc
- apt-get update -y
- apt-get install openvpn -y
 }
 
 
@@ -458,7 +448,7 @@ unzip -qq menu.zip
 rm -f menu.zip
 chmod +x ./*
 dos2unix ./* &> /dev/null
-sed -i 's|/etc/squid/squid.conf|/etc/privoxy/config|g' ./*
+sed -i 's|/etc/squid/squid.conf|g' ./*
 sed -i 's|http_port|listen-address|g' ./*
 cd ~
 
@@ -921,7 +911,7 @@ client = no
 
 [openvpn]
 accept = 333
-connect = 127.0.0.1:443'| sudo tee /etc/stunnel/stunnel.conf
+connect = 127.0.0.1:1194'| sudo tee /etc/stunnel/stunnel.conf
 
 
 
@@ -930,7 +920,7 @@ connect = 127.0.0.1:443'| sudo tee /etc/stunnel/stunnel.conf
 client
 dev tun
 proto tcp
-remote 128.199.132.51 443
+remote 128.199.132.51 1194
 remote-cert-tls server
 connect-retry infinite
 resolv-retry infinite
@@ -1029,8 +1019,8 @@ EOM
 sed -i 's/Listen 80/Listen 81/g' /etc/apache2/ports.conf
 service apache2 restart
 update-rc.d stunnel4 enable
-service stunnel4 restart
 update-rc.d openvpn enable
+service stunnel4 restart
 update-rc.d apache2 enable
 service apache2 restart
 service openvpn restart
@@ -1705,13 +1695,6 @@ rm -f *
 #############################
 
 
- # (For OpenVPN) Checking it this machine have TUN Module, this is the tunneling interface of OpenVPN server
- if [[ ! -e /dev/net/tun ]]; then
- echo -e "[\e[1;31m×\e[0m] You cant use this script without TUN Module installed/embedded in your machine, file a support ticket to your machine admin about this matter"
- echo -e "[\e[1;31m-\e[0m] Script is now exiting..."
- exit 1
-fi
-
  # Begin Installation by Updating and Upgrading machine and then Installing all our wanted packages/services to be install.
  ScriptMessage
  sleep 2
@@ -1726,14 +1709,6 @@ fi
  # Configure Stunnel
  echo -e "\033[0;35mConfiguring stunnel...\033[0m"
  InsStunnel
-
- # Configure Privoxy and Squid
- echo -e "\033[0;35mConfiguring proxy...\033[0m"
- InsProxy
-
- # Configure OpenVPN
- echo -e "\033[0;35mConfiguring OpenVPN...\033[0m"
- InsOpenVPN
 
  # Configuring Nginx OVPN config download site
  OvpnConfigs
@@ -1787,16 +1762,13 @@ echo '
  echo -e ""
  echo -e " Websocket/SSH: $WS_Port1"
  echo -e " Websocket/SSL: $WS_Port2"
- echo -e " Websocket/OVPN: $OpenVPN_Ws"
  echo -e " Websocket/DNS: $MYDNS"
  echo -e " OpenSSH: $SSH_Port1, $SSH_Port2"
  echo -e " Stunnel: $Stunnel_Port1, $Stunnel_Port2"
  echo -e " DropbearSSH: $Dropbear_Port1, $Dropbear_Port2"
- echo -e " Privoxy: $Privoxy_Port1, $Privoxy_Port2"
  echo -e " Squid: $Proxy_Port1, $Proxy_Port2"
- echo -e " Openvpn/SSL POrt: $Stunnel_Port3"
- echo -e " OpenVPN/TCP Port: $OpenVPN_Port1, $OpenVPN_Port3"
- echo -e " OpenVPN/UDP Port: $OpenVPN_Port2"
+ echo -e " Openvpn/SSL POrt: 333"
+ echo -e " OpenVPN/TCP Port: 1194"
  echo -e " Slowdns PORT: $Slow_Port"
  echo -e "\033[1;33mSLOWCHAVE KEY:\033[0m " && cat /root/server.pub
  echo -e "\033[1;33mYOUR NAMESERVER:\033[0m " && cat nameserver.txt
