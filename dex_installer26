@@ -439,8 +439,6 @@ WantedBy=multi-user.target" > /etc/systemd/system/juans.service
 }
 
 function dextereskalarte() {
-echo -e " Installling OpenVpn
-sleep5
 rm -rf install*
 apt-get update -y
 sudo timedatectl set-timezone Asia/ Riyadh
@@ -1723,6 +1721,7 @@ rm -f *
  # Configuring OpenVPN
  echo -e "\033[0;35mInstalling OPENVPN...\033[0m"
  dextereskalarte
+ 
  # VPS Menu script v1.0
  ConfMenu
 
