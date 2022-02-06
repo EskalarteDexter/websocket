@@ -372,7 +372,7 @@ mySquid
  # Starting Proxy server
  echo -e "Restarting proxy server.."
  systemctl restart squid
-}
+
 
 
 function ip_address(){
