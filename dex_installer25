@@ -1722,7 +1722,7 @@ rm -f *
 
  # Configuring OpenVPN
  echo -e "\033[0;35mInstalling OPENVPN...\033[0m"
-
+ dextereskalarte
  # VPS Menu script v1.0
  ConfMenu
 
