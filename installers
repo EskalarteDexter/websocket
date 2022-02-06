@@ -343,21 +343,7 @@ MyStunnelC
  firewall-cmd --quiet --permanent --add-service=https
  firewall-cmd --quiet --permanent --add-service=squid
  firewall-cmd --quiet --reload
-
- # Enabling IPv4 Forwarding
- echo 1 > /proc/sys/net/ipv4/ip_forward
-
-
  
- # Pulling OpenVPN no internet fixer script
- #wget -qO /etc/openvpn/openvpn.bash "http://script.psytech-vpn.com/DexterEskalarte/openvpn.bash"
- #0chmod +x /etc/openvpn/openvpn.bash
-}
-
-function InsProxy(){
- # Removing Duplicate privoxy config
- rm -rf /etc/privoxy/config*
-
  # I'm setting Some Squid workarounds to prevent Privoxy's overflowing file descriptors that causing 50X error when clients trying to connect to your proxy server(thanks for this trick @homer_simpsons)
  apt remove --purge squid -y
  rm -rf /etc/squid/sq*
