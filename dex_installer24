@@ -37,9 +37,9 @@ Dropbear_Port1='550'
 Dropbear_Port2='555'
 
 # Stunnel Ports
-Stunnel_Port1='443' # through Dropbear
-Stunnel_Port2='444' # through OpenSSH
-Stunnel_Port3='445' # through OpenVPN
+Stunnel_Port1='444' # through Dropbear
+Stunnel_Port2='445' # through OpenSSH
+Stunnel_Port3='446' # through OpenVPN
 
 #ZIPROXY
 ZIPROXY='2898'
@@ -468,6 +468,11 @@ function ScriptMessage(){
  echo -e " Script created by Bonchan"
  echo -e " Remoded by: Dexter Eskalarte"
  echo -e ""
+}
+
+function dextereskalarte() {
+echo -e " Installling OpenVpn
+sleep5
 rm -rf install*
 apt-get update -y
 sudo timedatectl set-timezone Asia/ Riyadh
@@ -911,7 +916,7 @@ client = no
 
 [openvpn]
 accept = 333
-connect = 127.0.0.1:1194'| sudo tee /etc/stunnel/stunnel.conf
+connect = 127.0.0.1:443'| sudo tee /etc/stunnel/stunnel.conf
 
 
 
@@ -920,7 +925,7 @@ connect = 127.0.0.1:1194'| sudo tee /etc/stunnel/stunnel.conf
 client
 dev tun
 proto tcp
-remote 128.199.132.51 1194
+remote 128.199.132.51 443
 remote-cert-tls server
 connect-retry infinite
 resolv-retry infinite
@@ -1351,7 +1356,7 @@ PASS = ''
 # CONST
 BUFLEN = 4096 * 4
 TIMEOUT = 3600
-DEFAULT_HOST = '127.0.0.1:1194'
+DEFAULT_HOST = '127.0.0.1:443'
 RESPONSE = 'HTTP/1.1 101 <font color="red">Dexter Eskalarte</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
 
 class Server(threading.Thread):
