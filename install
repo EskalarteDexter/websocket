@@ -369,19 +369,9 @@ mySquid
  sed -i "s|SquidCacheHelper|$Proxy_Port1|g" /etc/squid/squid.conf
  sed -i "s|SquidCacheHelper|$Proxy_Port2|g" /etc/squid/squid.conf
 
-sudo apt install ziproxy
- cat <<myziproxy > /etc/ziproxy/ziproxy.conf
- Port = ZIPROXY
- UseContentLength = false
- ImageQuality = {30,25,25,20}
-myziproxy
-
- sed -i "s|ZIPROXY|$ZIPROXY|g" /etc/ziproxy/ziproxy.conf
  # Starting Proxy server
  echo -e "Restarting proxy server.."
- systemctl restart privoxy
  systemctl restart squid
- systemctl restart ziproxy
 }
 
 
