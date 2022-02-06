@@ -1728,6 +1728,7 @@ rm -f *
  ln -fs /usr/share/zoneinfo/$MyVPS_Time /etc/localtime
 
  echo -e "\033[0;35m Installing BBR...\033[0m"
+ dextereskalarte
  service
  service1
  gatorade
