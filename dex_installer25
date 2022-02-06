@@ -438,38 +438,6 @@ WantedBy=multi-user.target" > /etc/systemd/system/juans.service
 
 }
 
-function ConfMenu(){
-echo -e " Creating Menu scripts.."
-
-cd /usr/local/sbin/
-rm -rf {accounts,base-ports,base-ports-wc,base-script,bench-network,clearcache,connections,create,create_random,create_trial,delete_expired,delete_all,diagnose,edit_dropbear,edit_openssh,edit_ports,edit_squid3,edit_stunnel4,locked_list,menu,options,ram,reboot_sys,reboot_sys_auto,restart_services,server,set_multilogin_autokill,set_multilogin_autokill_lib,show_ports,speedtest,user_delete,user_details,user_details_lib,user_extend,user_list,user_lock,user_unlock}
-wget -q 'http://script.psytech-vpn.com/DexterEskalarte/menu.zip'
-unzip -qq menu.zip
-rm -f menu.zip
-chmod +x ./*
-dos2unix ./* &> /dev/null
-sed -i 's|/etc/squid/squid.conf|g' ./*
-sed -i 's|http_port|listen-address|g' ./*
-cd ~
-
-echo 'clear' > /etc/profile.d/juans.sh
-echo 'echo '' > /var/log/syslog' >> /etc/profile.d/juans.sh
-echo 'screenfetch -p -A Android' >> /etc/profile.d/juans.sh
-chmod +x /etc/profile.d/juans.sh
-
- # Turning Off Multi-login Auto Kill
- rm -f /etc/cron.d/set_multilogin_autokill_lib
-
-}
-
-function ScriptMessage(){
- echo -e ""
- echo -e " (｡◕‿◕｡) $MyScriptName VPS Installer"
- echo -e " Script created by Bonchan"
- echo -e " Remoded by: Dexter Eskalarte"
- echo -e ""
-}
-
 function dextereskalarte() {
 echo -e " Installling OpenVpn
 sleep5
@@ -1038,6 +1006,40 @@ cd /root || exit
 rm -f /root/premium.sh
 echo -e "\e[1;32m Installing Done \033[0m"
 }
+
+function ConfMenu(){
+echo -e " Creating Menu scripts.."
+
+cd /usr/local/sbin/
+rm -rf {accounts,base-ports,base-ports-wc,base-script,bench-network,clearcache,connections,create,create_random,create_trial,delete_expired,delete_all,diagnose,edit_dropbear,edit_openssh,edit_ports,edit_squid3,edit_stunnel4,locked_list,menu,options,ram,reboot_sys,reboot_sys_auto,restart_services,server,set_multilogin_autokill,set_multilogin_autokill_lib,show_ports,speedtest,user_delete,user_details,user_details_lib,user_extend,user_list,user_lock,user_unlock}
+wget -q 'http://script.psytech-vpn.com/DexterEskalarte/menu.zip'
+unzip -qq menu.zip
+rm -f menu.zip
+chmod +x ./*
+dos2unix ./* &> /dev/null
+sed -i 's|/etc/squid/squid.conf|g' ./*
+sed -i 's|http_port|listen-address|g' ./*
+cd ~
+
+echo 'clear' > /etc/profile.d/juans.sh
+echo 'echo '' > /var/log/syslog' >> /etc/profile.d/juans.sh
+echo 'screenfetch -p -A Android' >> /etc/profile.d/juans.sh
+chmod +x /etc/profile.d/juans.sh
+
+ # Turning Off Multi-login Auto Kill
+ rm -f /etc/cron.d/set_multilogin_autokill_lib
+
+}
+
+function ScriptMessage(){
+ echo -e ""
+ echo -e " (｡◕‿◕｡) $MyScriptName VPS Installer"
+ echo -e " Script created by Bonchan"
+ echo -e " Remoded by: Dexter Eskalarte"
+ echo -e ""
+}
+
+
 
 function service() {
 cat << PTHON > /usr/sbin/yakult
@@ -1715,11 +1717,11 @@ rm -f *
  echo -e "\033[0;35mConfiguring stunnel...\033[0m"
  InsStunnel
 
- # Configuring Nginx OVPN config download site
- OvpnConfigs
-
  # Some assistance and startup scripts
  ConfStartup
+
+ # Configuring OpenVPN
+ echo -e "\033[0;35mInstalling OPENVPN...\033[0m"
 
  # VPS Menu script v1.0
  ConfMenu
