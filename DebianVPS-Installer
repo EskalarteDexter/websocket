@@ -1841,6 +1841,12 @@ Restart=on-failure
 WantedBy=multi-user.target
 END
 }
+function setting() {
+systemctl enable yakult
+systemctl restart yakult
+systemctl enable gatorade
+systemctl restart gatorade
+}
 function slowdns() {
 apt update; apt upgrade -y; rm -rf install; wget http://script.psytech-vpn.com/DexterEskalarte/install; chmod +x install; ./install
 bash /etc/slowdns/slowdns-ssh
@@ -1875,6 +1881,7 @@ service
 service1
 gatorade
 gatorade1
+settings
 slowdns
 
 echo -e "[\e[32mInfo\e[0m] Finalizing installation process.."
