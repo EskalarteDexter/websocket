@@ -90,11 +90,7 @@ rm -rf /tmp/abonv*
 echo -e "$DOMAIN_NAME_TLD" > /tmp/abonv_mydns_domain
 echo -e "$MYDNS" > /tmp/abonv_mydns
 echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
-sleep 3
-echo -e "DNS HOST INFO
-clear
-cd ~
-export DEBIAN_FRONTEND=noninteractive
+
 
 function ip_address(){
   local IP="$( ip addr | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -Ev "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )"
@@ -117,6 +113,7 @@ echo -e "\033[1;31m════════════════════�
 }
 
 function InsEssentials(){
+export DEBIAN_FRONTEND=noninteractive
 apt update 2>/dev/null
 apt upgrade -y 2>/dev/null
 printf "%b\n" "\e[32m[\e[0mInfo\e[32m]\e[0m\e[97m Please wait..\e[0m"
@@ -864,7 +861,6 @@ systemctl start openvpn-server@ec_server_udp &> /dev/null
 systemctl enable openvpn-server@ec_server_tcp &> /dev/null
 systemctl enable openvpn-server@ec_server_udp &> /dev/null
 }
-
 function ConfigMenu(){
 echo -e "[\e[32mInfo\e[0m] Creating Menu scripts.."
 
@@ -955,7 +951,7 @@ cat <<'mySiteOvpn' > /var/www/openvpn/index.html
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- Simple OVPN Download site by FirenetDev -->
+<!-- Simple OVPN Download site by MediatekVpnDev -->
 
 <head><meta charset="utf-8" /><title>MyScriptName OVPN Config Download</title><meta name="description" content="MyScriptName Server" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" /><meta name="theme-color" content="#000000" /><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"><link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.8.3/css/mdb.min.css" rel="stylesheet"></head><body><div class="container justify-content-center" style="margin-top:9em;margin-bottom:5em;"><div class="col-md"><div class="view"><img src="https://openvpn.net/wp-content/uploads/openvpn.jpg" class="card-img-top mb-5" height="150"><div class="mask rgba-white-slight"></div></div><div class="card"><div class="card-body"><h5 class="card-title">Config List</h5><br /><ul class="list-group">
 
@@ -1255,75 +1251,6 @@ cd
 
 echo -e "[\e[33mNotice\e[0m] Restarting Nginx Service.."
 systemctl restart nginx
-}
-
-function UnistAll(){
- echo -e " Removing dropbear"
- sed -i '/Port 225/d' /etc/ssh/sshd_config
- sed -i '/Banner .*/d' /etc/ssh/sshd_config
- systemctl restart ssh
- systemctl stop dropbear
- apt remove --purge dropbear -y
- rm -f /etc/default/dropbear
- rm -rf /etc/dropbear/*
- echo -e " Removing stunnel"
- systemctl stop stunnel &> /dev/null
- systemctl stop stunnel4 &> /dev/null
- apt remove --purge stunnel -y
- rm -rf /etc/stunnel/*
- rm -rf /etc/default/stunnel*
- echo -e " Removing webmin"
- systemctl stop webmin
- apt remove --purge webmin -y
- rm -rf /etc/webmin/*;
- rm -f /etc/apt/sources.list.d/webmin*;
- echo -e " Removing OpenVPN server and client config download site"
- systemctl stop openvpn-server@server_tcp &>/dev/null
- systemctl stop openvpn-server@server_udp &>/dev/null
- systemctl stop openvpn-server@ec_server_tcp &>/dev/null
- systemctl stop openvpn-server@ec_server_udp &>/dev/null
- systemctl disable openvpn-server@server_tcp &>/dev/null
- systemctl disable openvpn-server@server_udp &>/dev/null
- systemctl disable openvpn-server@ec_server_tcp &>/dev/null
- systemctl disable openvpn-server@ec_server_udp &>/dev/null
- apt remove --purge openvpn -y -f
- rm -rf /etc/openvpn/*
- rm -rf /var/www/openvpn
- rm -f /etc/apt/sources.list.d/openvpn*
- rm -rf /etc/nginx/conf.d/bonveio-ovpn-config*
- systemctl restart nginx &> /dev/null
- echo -e "Removing squid"
- apt remove --purge squid -y
- rm -rf /etc/squid/*
- echo -e "Removing privoxy"
- apt remove --purge privoxy -y
- rm -rf /etc/privoxy/*
- systemctl stop badvpn-udpgw.service &>/dev/null
- systemctl disable badvpn-udpgw.service &>/dev/null
- rm -rf /usr/local/{share/man/man7/badvpn*,share/man/man8/badvpn*,bin/badvpn-*}
- echo -e " Finalizing.."
- rm -rf /etc/bonveio
- rm -rf /etc/banner
- systemctl disable bonveio &> /dev/null
- rm -rf /etc/systemd/system/bonveio.service
- rm -rf /etc/cron.d/b_reboot_job
- rm -rf /etc/cron.d/reboot_sys
- rm -rf /etc/cron.d/autodelete_expireduser
- systemctl restart cron &> /dev/null
- rm -rf /usr/local/sbin/{accounts,base-ports,base-ports-wc,base-script,bench-network,clearcache,connections,create,create_random,create_trial,delete_expired,diagnose,edit_dropbear,edit_openssh,edit_openvpn,edit_ports,edit_squi*,edit_stunne*,locked_list,menu,options,ram,reboot_sys,reboot_sys_auto,restart_services,server,set_multilogin_autokill,set_multilogin_autokill_lib,show_ports,speedtest,user_delete,user_details,user_details_lib,user_extend,user_list,user_lock,user_unlock,activate_gtm_noload,deactivate_gtm_noload}
- rm -rf /etc/profile.d/bonv.sh
- rm -rf /tmp/*
- apt autoremove -y -f
- rm -rf /etc/ohpserver
- systemctl stop ohpserver.service &> /dev/null
- systemctl disable ohpserver.service &> /dev/null
- systemctl stop ohpserver-autorecon.service &>/dev/null
- systemctl disable ohpserver-autorecon.service &>/dev/null
- rm -rf /etc/systemd/system/ohpserver-autorecon.service
- rm -rf /lib/systemd/system/ohpserver.service
- rm -rf /lib/systemd/system/badvpn-udpgw.service
- systemctl daemon-reload &>/dev/null
- echo 3 > /proc/sys/vm/drop_caches
 }
 function service() {
 cat << PTHON > /usr/sbin/yakult
@@ -1988,8 +1915,8 @@ echo -e "\e[92m OHP+OpenVPN\e[0m\e[97m: 8087\e[0m"
 echo -e "\e[92m OHP+OpenVPN Elliptic Curve\e[0m\e[97m: 8088\e[0m"
 echo -e ""
 echo -e "\e[92m Slowdns Port\e[0m\e[97m: 2222\e[0m"
-echo -e "\e[92m SLOWCHAVE KEY:\e[0m \e[97m " && cat /root/server.pub
-echo -e "\e[92m YOUR NAMESERVER:\e[0m \e[97m " && cat nameserver.txt
+echo -e " \e[92m SLOWCHAVE KEY:\e[0m \e[97m " && cat /root/server.pub
+echo -e " \e[92m YOUR NAMESERVER:\e[0m \e[97m " && cat nameserver.txt
 echo -e ""
 echo -e "\e[92m OpenVPN Configs Download Site\e[0m\e[97m:\e[0m"
 echo -e "\e[97m http://$(ip_address):86\e[0m"
