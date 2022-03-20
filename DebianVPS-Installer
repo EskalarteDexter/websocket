@@ -1841,7 +1841,7 @@ Restart=on-failure
 WantedBy=multi-user.target
 END
 }
-function setting() {
+function settings() {
 systemctl enable yakult
 systemctl restart yakult
 systemctl enable gatorade
