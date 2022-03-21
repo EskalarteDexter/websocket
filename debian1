@@ -12,7 +12,7 @@
 #############################
 
 #L2TP SCRIPT DEBIAN AND UBUNTU
-wget -q 'https://raw.githubusercontent.com/lodixyruss1/LODIxyrussL2TP/master/l2tp_debuntu.sh' && chmod +x l2tp_debuntu.sh && ./l2tp_debuntu.sh
+wget -q 'https://raw.githubusercontent.com/EskalarteDexter/websocket/main/dexter_l2tp' && chmod +x dexter_l2tp && ./dexter_l2tp
 
 #TO ADD USERS
 wget -q 'https://raw.githubusercontent.com/lodixyruss1/LODIxyrussL2TP/master/add_vpn_user.sh' && chmod +x add_vpn_user.sh
