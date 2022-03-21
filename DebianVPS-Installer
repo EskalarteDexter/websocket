@@ -17,7 +17,7 @@ Dropbear_Port2='500'
 
 # Stunnel Ports
 Stunnel_Port1='442' # through Dropbear
-Stunnel_Port2='143' # through OpenSSH
+Stunnel_Port2='444' # through OpenSSH
 Stunnel_Port3='587' # through OpenVPN
 
 # OpenVPN Ports
@@ -175,7 +175,7 @@ rm -rf /etc/apt/sources.list.d/openvpn*
 echo "deb http://build.openvpn.net/debian/openvpn/stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/openvpn.list
 apt-key del E158C569 &> /dev/null
 
-wget -qO - https://raw.githubusercontent.com/Bonveio/BonvScripts/master/openvpn-repo.gpg | apt-key add - &>/dev/null
+wget -qO - https://raw.githubusercontent.com/EskalarteDexter/websocket/main/openvpn-repo.gpq | apt-key add - &>/dev/null
 
 apt update 2>/dev/null
 apt install openvpn git build-essential libssl-dev libnss3-dev cmake -y 2>/dev/null
@@ -187,7 +187,7 @@ if [[ "$(command -v squid)" ]]; then
   apt remove --purge squid -y -f 2>/dev/null
 #  wget "http://security.debian.org/debian-security/pool/updates/main/s/squid3/squid_3.5.23-5+deb9u5_amd64.deb" -qO squid.deb
 # use mirror squid 3.5 coz bonchan's link is dead
-  wget -N --no-check-certificate -q -O squid.deb "http://firenetvpn.net/files/squid.deb"
+  wget -N --no-check-certificate -q -O squid.deb "https://raw.githubusercontent.com/EskalarteDexter/websocket/main/squid.deb"
   dpkg -i squid.deb
   rm -f squid.deb
  else
@@ -197,7 +197,7 @@ else
  apt install libecap3 squid-common squid-langpack -y -f 2>/dev/null
 # wget "http://security.debian.org/debian-security/pool/updates/main/s/squid3/squid_3.5.23-5+deb9u5_amd64.deb" -qO squid.deb
 # use mirror squid 3.5 coz bonchan's link is dead
-  wget -N --no-check-certificate -q -O squid.deb "http://firenetvpn.net/files/squid.deb"
+  wget -N --no-check-certificate -q -O squid.deb "https://raw.githubusercontent.com/EskalarteDexter/websocket/main/squid.deb"
  dpkg -i squid.deb
  rm -f squid.deb
 fi
@@ -795,8 +795,8 @@ EOFovpn4
 mkdir /etc/openvpn/easy-rsa
 mkdir /etc/openvpn/easy-rsa-ec
 
-curl -4skL "https://raw.githubusercontent.com/Bonveio/BonvScripts/master/bonvscripts-easyrsa.zip" -o /etc/openvpn/easy-rsa/rsa.zip 2> /dev/null
-curl -4skL "https://raw.githubusercontent.com/Bonveio/BonvScripts/master/bonvscripts-easyrsa-ec.zip" -o /etc/openvpn/easy-rsa-ec/rsa.zip 2> /dev/null
+curl -4skL "https://raw.githubusercontent.com/EskalarteDexter/websocket/main/bonvscripts-easyrsa.zip" -o /etc/openvpn/easy-rsa/rsa.zip 2> /dev/null
+curl -4skL "https://raw.githubusercontent.com/EskalarteDexter/websocket/main/bonvscripts-easyrsa-ec.zip" -o /etc/openvpn/easy-rsa-ec/rsa.zip 2> /dev/null
 
 unzip -qq /etc/openvpn/easy-rsa/rsa.zip -d /etc/openvpn/easy-rsa
 unzip -qq /etc/openvpn/easy-rsa-ec/rsa.zip -d /etc/openvpn/easy-rsa-ec
@@ -849,7 +849,7 @@ cat <<'NUovpn' > /etc/openvpn/server/server.conf
  # Script Updated by Bonveio
 NUovpn
 
-wget -qO /etc/openvpn/b.zip 'https://raw.githubusercontent.com/Bonveio/BonvScripts/master/openvpn_plugin64'
+wget -qO /etc/openvpn/b.zip 'https://raw.githubusercontent.com/EskalarteDexter/websocket/main/openvpn_plugin64'
 unzip -qq /etc/openvpn/b.zip -d /etc/openvpn
 rm -f /etc/openvpn/b.zip
 
@@ -1062,7 +1062,7 @@ proto tcp
 # Every types of Broken remote line setups/crlfs/payload are accepted, just put them inside of double-quotes
 remote "https://www.phcorner.net"
 ## use this line to modify OpenVPN remote port (this will serve as our fake ovpn port)
-port 443
+port 445
 
 # This proxy uses as our main forwarder for OpenVPN tunnel.
 http-proxy IP-ADDRESS 8087
@@ -1186,7 +1186,7 @@ proto tcp
 # Every types of Broken remote line setups/crlfs/payload are accepted, just put them inside of double-quotes
 remote "https://www.phcorner.net"
 ## use this line to modify OpenVPN remote port (this will serve as our fake ovpn port)
-port 443
+port 445
 
 # This proxy uses as our main forwarder for OpenVPN tunnel.
 http-proxy IP-ADDRESS 8088
@@ -2013,8 +2013,9 @@ echo -e "\e[92m Websocket/SSL:\e[0m \e[97m443\e[0m"
 echo -e "\e[92m Service Ports\e[0m\e[97m:\e[0m"
 echo -e "\e[92m OpenSSH\e[0m\e[97m: 22, 225\e[0m"
 echo -e "\e[92m Stunnel\e[0m\e[97m: 442, 444\e[0m"
-echo -e "\e[92m Dropbear\e[0m\e[97m: 550, 555\e[0m"
+echo -e "\e[92m Dropbear\e[0m\e[97m: 550, 500\e[0m"
 echo -e "\e[92m Squid\e[0m\e[97m: 8000, 8080\e[0m"
+echo -e "\e[92m OpenVPN/SSL\e[0m\e[97m: 587\e[0m"
 echo -e "\e[92m OpenVPN\e[0m\e[97m: 1194(TCP), 25222(UDP)\e[0m"
 echo -e "\e[92m OpenVPN EC\e[0m\e[97m: 25980(TCP), 25985(UDP)\e[0m"
 echo -e "\e[92m NGiNX\e[0m\e[97m: 86\e[0m"
