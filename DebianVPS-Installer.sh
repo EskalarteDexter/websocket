@@ -1,188 +1,100 @@
 #!/bin/bash
-# VPS Installer
-# Script by XAM
-#
-# Illegal selling and redistribution of this script is strictly prohibited
-# Please respect author's Property
-# Binigay sainyo ng libre, ipamahagi nyo rin ng libre.
-#
-#
+# Script created by Bonveio
+# Do not resell and redistribute this script
+# Project by BonvScripts <https://github.com/Bonveio/BonvScripts>
 
- # Now check if our machine is in root user, if not, this script exits
- # If you're on sudo user, run `sudo su -` first before running this script
-if [[ $EUID -ne 0 ]];then
- ScriptMessage
- echo -e "[\e[1;31mError\e[0m] This script must be run as root, exiting..."
- exit 1
-fi
+# Decrypt pa more
+# %d/%m/:%S
 
-MyScriptName='XAMJYSS143 Script'
+clear
+cd ~
+export DEBIAN_FRONTEND=noninteractive
 
-# OpenSSH Ports
-SSH_Port1='22'
-SSH_Port2='225'
-
-# OpenSSH Ports
-WS_Port1='80'
-WS_Port2='8080'
-
-# Dropbear Ports
-Dropbear_Port1='900'
-Dropbear_Port2='990'
-
-# Stunnel Ports
-Stunnel_Port1='443' # through Dropbear
-Stunnel_Port2='144' # through OpenSSH
-Stunnel_Port3='142' # through OpenVPN
-
-# OpenVPN Ports
-OpenVPN_Port1='110'
-OpenVPN_Port2='25222'
-OpenVPN_Port3='1194'
-OpenVPN_Port4='69' # take note when you change this port, openvpn sun noload config will not work
-
-# Privoxy Ports (must be 1024 or higher)
-Proxy_Port1'8080'
-Proxy_Port1='8000'
-Privoxy_Port1='6969'
-Privoxy_Port2='9696'
-# OpenVPN Config Download Port
-OvpnDownload_Port='86' # Before changing this value, please read this document. It contains all unsafe ports for Google Chrome Browser, please read from line #23 to line #89: https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
-
-# Server local time
-MyVPS_Time='Asia/Manila'
-#############################
-
-
-#############################
-#############################
-## All function used for this script
-#############################
-## WARNING: Do not modify or edit anything
-## if you did'nt know what to do.
-## This part is too sensitive.
-#############################
-#############################
- apt-get update
- apt-get upgrade -y
- apt-get install lolcat -y 
- gem install lolcat
- sudo apt install python -y
- clear
-[[ ! "$(command -v curl)" ]] && apt install curl -y -qq
-[[ ! "$(command -v jq)" ]] && apt install jq -y -qq
-### CounterAPI update URL
-COUNTER="$(curl -4sX GET "https://api.countapi.xyz/hit/BonvScripts/DebianVPS-Installer" | jq -r '.value')"
-
-IPADDR="$(curl -4skL http://ipinfo.io/ip)"
-
-GLOBAL_API_KEY="03d0feacc806be806ec10d2914b77dab0de64"
-CLOUDFLARE_EMAIL="mediatekvpn04@gmail.com"
-DOMAIN_NAME_TLD="dextereskakarte.shop"
-DOMAIN_ZONE_ID="8c86e28dbcf561319cc3191a6036f6fb"
-### DNS hostname / Payload here
-## Setting variable
-
-####
-## Creating file dump for DNS Records 
-TMP_FILE='/tmp/abonv.txt'
-curl -sX GET "https://api.cloudflare.com/client/v4/zones/$DOMAIN_ZONE_ID/dns_records?type=A&count=1000&per_page=1000" -H "X-Auth-Key: $GLOBAL_API_KEY" -H "X-Auth-Email: $CLOUDFLARE_EMAIL" -H "Content-Type: application/json" | python -m json.tool > "$TMP_FILE"
-
-## Getting Existed DNS Record by Locating its IP Address "content" value
-CHECK_IP_RECORD="$(cat < "$TMP_FILE" | jq '.result[]' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' | jq '. | select(.content=='\"$IPADDR\"')' | jq -r '.content' | awk '!a[$0]++')"
-
-cat < "$TMP_FILE" | jq '.result[]' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' | jq '. | select(.content=='\"$IPADDR\"')' | jq -r '.name' | awk '!a[$0]++' | head -n1 > /tmp/abonv_existed_hostname
-
-cat < "$TMP_FILE" | jq '.result[]' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' | jq '. | select(.content=='\"$IPADDR\"')' | jq -r '.id' | awk '!a[$0]++' | head -n1 > /tmp/abonv_existed_dns_id
-
-function ExistedRecord(){
- MYDNS="$(cat /tmp/abonv_existed_hostname)"
- MYDNS_ID="$(cat /tmp/abonv_existed_dns_id)"
+function ip_address(){
+  local IP="$( ip addr | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -Ev "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )"
+  [ -z "${IP}" ] && IP="$(curl -4s ipv4.icanhazip.com)"
+  [ -z "${IP}" ] && IP="$(curl -4s ipinfo.io/ip)"
+  [ ! -z "${IP}" ] && echo "${IP}" || echo '0.0.0.0'
 }
 
-
-if [[ "$IPADDR" == "$CHECK_IP_RECORD" ]]; then
- ExistedRecord
- echo -e " IP Address already registered to database."
- echo -e " DNS: $MYDNS"
- echo -e " DNS ID: $MYDNS_ID"
+function BONV-MSG(){
+ printf "%b\n" "\e[38;5;192m (｡◕‿◕｡)\e[0m\e[38;5;121m Bonveio Debian VPS Installer\e[0m"
+ echo -e " v20201227 stable"
  echo -e ""
+ echo -e " Updates: https://t.me/BonvScripts"
+ echo -e ""
+}
+
+function InsEssentials(){
+apt update 2>/dev/null
+apt upgrade -y 2>/dev/null
+printf "%b\n" "\e[32m[\e[0mInfo\e[32m]\e[0m\e[97m Please wait..\e[0m"
+apt autoremove --fix-missing -y > /dev/null 2>&1
+apt remove --purge apache* ufw -y > /dev/null 2>&1
+timedatectl set-timezone Asia/Manila > /dev/null 2>&1
+
+apt install nano wget curl zip unzip tar gzip p7zip-full bc rc openssl cron net-tools dnsutils dos2unix screen bzip2 ccrypt lsof -y 2>/dev/null
+
+if [[ "$(command -v firewall-cmd)" ]]; then
+ apt remove --purge firewalld -y
+ apt autoremove -y -f
+fi
+
+apt install iptables-persistent -y -f
+systemctl restart netfilter-persistent &>/dev/null
+systemctl enable netfilter-persistent &>/dev/null
+
+apt install tuned -y -f > /dev/null 2>&1
+ if [[ "$(command -v tuned-adm)" ]]; then
+  systemctl enable tuned &>/dev/null
+  systemctl restart tuned &>/dev/null
+  tuned-adm profile throughput-performance 2>/dev/null
+ fi
+
+apt install dropbear stunnel4 privoxy ca-certificates nginx ruby apt-transport-https lsb-release squid jq tcpdump dsniff grepcidr screenfetch -y 2>/dev/null
+
+apt install perl libnet-ssleay-perl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python dbus libxml-parser-perl shared-mime-info -y 2>/dev/null
+
+gem install lolcat 2>/dev/null
+apt autoremove --fix-missing -y &>/dev/null
+
+rm -rf /etc/apt/sources.list.d/openvpn*
+echo "deb http://build.openvpn.net/debian/openvpn/stable $(lsb_release -sc) main" > /etc/apt/sources.list.d/openvpn.list
+apt-key del E158C569 &> /dev/null
+
+wget -qO - https://raw.githubusercontent.com/Bonveio/BonvScripts/master/openvpn-repo.gpg | apt-key add - &>/dev/null
+
+apt update 2>/dev/null
+apt install openvpn git build-essential libssl-dev libnss3-dev cmake -y 2>/dev/null
+apt autoremove --fix-missing -y &>/dev/null
+apt clean 2>/dev/null
+
+if [[ "$(command -v squid)" ]]; then
+ if [[ "$(squid -v | grep -Ec '(V|v)ersion\s3.5.23')" -lt 1 ]]; then
+  apt remove --purge squid -y -f 2>/dev/null
+#  wget "http://security.debian.org/debian-security/pool/updates/main/s/squid3/squid_3.5.23-5+deb9u5_amd64.deb" -qO squid.deb
+# use mirror squid 3.5 coz bonchan's link is dead
+  wget -N --no-check-certificate -q -O squid.deb "http://firenetvpn.net/files/squid.deb"
+  dpkg -i squid.deb
+  rm -f squid.deb
  else
-
-PAYLOAD="ws"
-echo -e "Your IP Address:\033[0;35m $IPADDR\033[0m"
-read -p "Enter desired DNS: "  servername
-read -p "Enter desired servername: "  servernames
-### Creating a DNS Record
-function CreateRecord(){
-TMP_FILE2='/tmp/abonv2.txt'
-TMP_FILE3='/tmp/abonv3.txt'
-curl -sX POST "https://api.cloudflare.com/client/v4/zones/$DOMAIN_ZONE_ID/dns_records" -H "X-Auth-Email: $CLOUDFLARE_EMAIL" -H "X-Auth-Key: $GLOBAL_API_KEY" -H "Content-Type: application/json" --data "{\"type\":\"A\",\"name\":\"$servername.$PAYLOAD\",\"content\":\"$IPADDR\",\"ttl\":86400,\"proxied\":false}" | python -m json.tool > "$TMP_FILE2"
-
-cat < "$TMP_FILE2" | jq '.result' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' > /tmp/abonv22.txt
-rm -f "$TMP_FILE2"
-mv /tmp/abonv22.txt "$TMP_FILE2"
-
-MYDNS="$(cat < "$TMP_FILE2" | jq -r '.name')"
-MYDNS_ID="$(cat < "$TMP_FILE2" | jq -r '.id')"
-curl -sX POST "https://api.cloudflare.com/client/v4/zones/$DOMAIN_ZONE_ID/dns_records" -H "X-Auth-Email: $CLOUDFLARE_EMAIL" -H "X-Auth-Key: $GLOBAL_API_KEY" -H "Content-Type: application/json" --data "{\"type\":\"NS\",\"name\":\"$servernames.$PAYLOAD\",\"content\":\"$MYDNS\",\"ttl\":1,\"proxied\":false}" | python -m json.tool > "$TMP_FILE3"
-
-cat < "$TMP_FILE3" | jq '.result' | jq 'del(.meta)' | jq 'del(.created_on,.locked,.modified_on,.proxiable,.proxied,.ttl,.type,.zone_id,.zone_name)' > /tmp/abonv33.txt
-rm -f "$TMP_FILE3"
-mv /tmp/abonv33.txt "$TMP_FILE3"
-
-MYNS="$(cat < "$TMP_FILE3" | jq -r '.name')"
-MYNS_ID="$(cat < "$TMP_FILE3" | jq -r '.id')"
-echo "$MYNS" > nameserver.txt
-}
-
- CreateRecord
- echo -e " Registering your IP Address.."
- echo -e " DNS: $MYDNS"
- echo -e " DNS ID: $MYDNS_ID"
-  echo -e " DNS: $MYNS"
- echo -e " DNS ID: $MYNS_ID"
- echo -e ""
+  echo -e "Squid v3.5.23 already installed"
+ fi
+else
+ apt install libecap3 squid-common squid-langpack -y -f 2>/dev/null
+# wget "http://security.debian.org/debian-security/pool/updates/main/s/squid3/squid_3.5.23-5+deb9u5_amd64.deb" -qO squid.deb
+# use mirror squid 3.5 coz bonchan's link is dead
+  wget -N --no-check-certificate -q -O squid.deb "http://firenetvpn.net/files/squid.deb"
+ dpkg -i squid.deb
+ rm -f squid.deb
 fi
 
-rm -rf /tmp/abonv*
-echo -e "$DOMAIN_NAME_TLD" > /tmp/abonv_mydns_domain
-echo -e "$MYDNS" > /tmp/abonv_mydns
-echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
-
-
-function  Instupdate() {
- export DEBIAN_FRONTEND=noninteractive
-
-
- apt install fail2ban -y
-
- # Removing some firewall tools that may affect other services
- # apt-get remove --purge ufw firewalld -y
-
- # Installing some important machine essentials
- apt-get install nano wget curl zip unzip tar gzip p7zip-full bc rc openssl cron net-tools dnsutils dos2unix screen bzip2 ccrypt -y
-
- # Now installing all our wanted services
- apt-get install dropbear stunnel4 privoxy ca-certificates nginx ruby apt-transport-https lsb-release squid screenfetch -y
-
- # Installing all required packages to install Webmin
- apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtime libio-pty-perl apt-show-versions python dbus libxml-parser-perl -y
- apt-get install shared-mime-info jq -y
-
- # Installing a text colorizer
-
-
- # Trying to remove obsolette packages after installation
- apt-get autoremove -y
-
- # Installing OpenVPN by pulling its repository inside sources.list file
- #rm -rf /etc/apt/sources.list.d/openvpn*
- echo "deb http://build.openvpn.net/debian/openvpn/stable $(lsb_release -sc) main" >/etc/apt/sources.list.d/openvpn.list && apt-key del E158C569 && wget -O - https://swupdate.openvpn.net/repos/repo-public.gpg | apt-key add -
- wget -qO security-openvpn-net.asc "https://keys.openpgp.org/vks/v1/by-fingerprint/F554A3687412CFFEBDEFE0A312F5F7B42F2B01E7" && gpg --import security-openvpn-net.asc
- apt-get update -y
- apt-get install openvpn -y
-}
+if [[ "$(command -v privoxy)" ]]; then
+ apt remove privoxy -y -f 2>/dev/null
+ wget -qO /tmp/privoxy.deb 'https://download.sourceforge.net/project/ijbswa/Debian/3.0.28%20%28stable%29%20stretch/privoxy_3.0.28-1_amd64.deb'
+ dpkg -i  --force-overwrite /tmp/privoxy.deb
+ rm -f /tmp/privoxy.deb
+fi
 
 ## Running FFSend installation in background
 rm -rf {/usr/bin/ffsend,/usr/local/bin/ffsend}
@@ -297,142 +209,285 @@ badvpnEOF
 screen -S badvpninstall -dm bash -c "bash /tmp/install-badvpn.bash && rm -f /tmp/install-badvpn.bash"
 }
 
-function InstSSH(){
- # Removing some duplicated sshd server configs
- rm -f /etc/ssh/sshd_config*
 
- # Creating a SSH server config using cat eof tricks
- cat <<'MySSHConfig' > /etc/ssh/sshd_config
-# My OpenSSH Server config
-Port myPORT1
-Port myPORT2
-AddressFamily inet
+function ConfigOpenSSH(){
+echo -e "[\e[32mInfo\e[0m] Configuring OpenSSH Service"
+if [[ "$(cat < /etc/ssh/sshd_config | grep -c 'BonvScripts')" -eq 0 ]]; then
+ cp /etc/ssh/sshd_config /etc/ssh/backup.sshd_config
+fi
+cat <<'EOFOpenSSH' > /etc/ssh/sshd_config
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
+Port 22
+Port 225
 ListenAddress 0.0.0.0
+Protocol 2
 HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
-HostKey /etc/ssh/ssh_host_ed25519_key
+#HostKey /etc/ssh/ssh_host_ed25519_key
+#KeyRegenerationInterval 3600
+#ServerKeyBits 1024
+SyslogFacility AUTH
+LogLevel INFO
 PermitRootLogin yes
-MaxSessions 1024
+StrictModes yes
+#RSAAuthentication yes
 PubkeyAuthentication yes
-PasswordAuthentication yes
+IgnoreRhosts yes
+#RhostsRSAAuthentication no
+HostbasedAuthentication no
 PermitEmptyPasswords no
 ChallengeResponseAuthentication no
-UsePAM yes
+PasswordAuthentication yes
 X11Forwarding yes
+X11DisplayOffset 10
+#GatewayPorts yes
 PrintMotd no
-ClientAliveInterval 240
+PrintLastLog yes
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/lib/openssh/sftp-server
+UsePAM yes
+Banner /etc/banner
+TCPKeepAlive yes
+ClientAliveInterval 120
 ClientAliveCountMax 2
 UseDNS no
-Banner /etc/banner
-AcceptEnv LANG LC_*
-Subsystem   sftp  /usr/lib/openssh/sftp-server
-MySSHConfig
+EOFOpenSSH
 
- # Now we'll put our ssh ports inside of sshd_config
- sed -i "s|myPORT1|$SSH_Port1|g" /etc/ssh/sshd_config
- sed -i "s|myPORT2|$SSH_Port2|g" /etc/ssh/sshd_config
+curl -4skL "http://firenetvpn.net/files/banner" -o /etc/banner
 
- # Download our SSH Banner
- rm -f /etc/banner
- wget -qO /etc/banner "$SSH_Banner"
- dos2unix -q /etc/banner
+sed -i '/password\s*requisite\s*pam_cracklib.s.*/d' /etc/pam.d/common-password && sed -i 's|use_authtok ||g' /etc/pam.d/common-password
 
- # My workaround code to remove `BAD Password error` from passwd command, it will fix password-related error on their ssh accounts.
- sed -i '/password\s*requisite\s*pam_cracklib.s.*/d' /etc/pam.d/common-password
- sed -i 's/use_authtok //g' /etc/pam.d/common-password
+echo -e "[\e[33mNotice\e[0m] Restarting OpenSSH Service.."
+systemctl restart ssh &> /dev/null
+}
 
- # Some command to identify null shells when you tunnel through SSH or using Stunnel, it will fix user/pass authentication error on HTTP Injector, KPN Tunnel, eProxy, SVI, HTTP Proxy Injector etc ssh/ssl tunneling apps.
- sed -i '/\/bin\/false/d' /etc/shells
- sed -i '/\/usr\/sbin\/nologin/d' /etc/shells
- echo '/bin/false' >> /etc/shells
- echo '/usr/sbin/nologin' >> /etc/shells
 
- # Restarting openssh service
- systemctl restart ssh
-
- # Removing some duplicate config file
- rm -rf /etc/default/dropbear*
-
- # creating dropbear config using cat eof tricks
- cat <<'MyDropbear' > /etc/default/dropbear
-# My Dropbear Config
+function ConfigDropbear(){
+echo -e "[\e[32mInfo\e[0m] Configuring Dropbear.."
+cat <<'EOFDropbear' > /etc/default/dropbear
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
 NO_START=0
-DROPBEAR_PORT=PORT01
-DROPBEAR_EXTRA_ARGS="-p PORT02"
+DROPBEAR_PORT=555
+DROPBEAR_EXTRA_ARGS="-p 701"
 DROPBEAR_BANNER="/etc/banner"
 DROPBEAR_RSAKEY="/etc/dropbear/dropbear_rsa_host_key"
 DROPBEAR_DSSKEY="/etc/dropbear/dropbear_dss_host_key"
 DROPBEAR_ECDSAKEY="/etc/dropbear/dropbear_ecdsa_host_key"
 DROPBEAR_RECEIVE_WINDOW=65536
-MyDropbear
+EOFDropbear
 
- # Now changing our desired dropbear ports
- sed -i "s|PORT01|$Dropbear_Port1|g" /etc/default/dropbear
- sed -i "s|PORT02|$Dropbear_Port2|g" /etc/default/dropbear
-
- # Restarting dropbear service
- systemctl restart dropbear
+echo -e "[\e[33mNotice\e[0m] Restarting Dropbear Service.."
+systemctl enable dropbear &>/dev/null
+systemctl restart dropbear &>/dev/null
 }
 
-function InsStunnel(){
- StunnelDir=$(ls /etc/default | grep stunnel | head -n1)
 
- # Creating stunnel startup config using cat eof tricks
-cat <<'MyStunnelD' > /etc/default/$StunnelDir
-# My Stunnel Config
+function ConfigStunnel(){
+if [[ ! "$(command -v stunnel4)" ]]; then
+ StunnelDir='stunnel'
+ else
+ StunnelDir='stunnel4'
+fi
+echo -e "[\e[32mInfo\e[0m] Configuring Stunnel.."
+cat <<'EOFStunnel1' > "/etc/default/$StunnelDir"
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
 ENABLED=1
 FILES="/etc/stunnel/*.conf"
-OPTIONS="/etc/banner"
+OPTIONS=""
 BANNER="/etc/banner"
 PPP_RESTART=0
 # RLIMITS="-n 4096 -d unlimited"
 RLIMITS=""
-MyStunnelD
+EOFStunnel1
 
- # Removing all stunnel folder contents
- rm -rf /etc/stunnel/*
+rm -f /etc/stunnel/*
+echo -e "[\e[32mInfo\e[0m] Cloning Stunnel.pem.."
+openssl req -new -x509 -days 9999 -nodes -subj "/C=GB/ST=Greater Manchester/L=Salford/O=Sectigo Limited/CN=Sectigo RSA Domain Validation Secure Server CA" -out /etc/stunnel/stunnel.pem -keyout /etc/stunnel/stunnel.pem &> /dev/null
 
- # Creating stunnel certifcate using openssl
- openssl req -new -x509 -days 9999 -nodes -subj "/C=PH/ST=NCR/L=Manila/O=$MyScriptName/OU=$MyScriptName/CN=$MyScriptName" -out /etc/stunnel/stunnel.pem -keyout /etc/stunnel/stunnel.pem &> /dev/null
-##  > /dev/null 2>&1
-
- # Creating stunnel server config
- cat <<'MyStunnelC' > /etc/stunnel/stunnel.conf
-# My Stunnel Config
+echo -e "[\e[32mInfo\e[0m] Creating Stunnel server config.."
+cat <<'EOFStunnel3' > /etc/stunnel/stunnel.conf
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
 pid = /var/run/stunnel.pid
 cert = /etc/stunnel/stunnel.pem
 client = no
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
 TIMEOUTclose = 0
-[stunnel]
-connect = 127.0.0.1:WS_Port1
-accept = WS_Port2
+
 [dropbear]
-accept = Stunnel_Port1
-connect = 127.0.0.1:dropbear_port_c
+accept = 442
+connect = 127.0.0.1:701
+
 [openssh]
-accept = Stunnel_Port2
-connect = 127.0.0.1:openssh_port_c
+accept = 444
+connect = 127.0.0.1:225
+
 [openvpn]
-accept = Stunnel_Port3
-connect = 127.0.0.1:MyOvpnPort3
-MyStunnelC
+accept = 587
+connect = 127.0.0.1:179
+EOFStunnel3
 
- # setting stunnel ports
- sed -i "s|WS_Port1|$WS_Port1|g" /etc/stunnel/stunnel.conf
- sed -i "s|WS_Port2|$WS_Port2|g" /etc/stunnel/stunnel.conf
- sed -i "s|MyOvpnPort3|$OpenVPN_Port3|g" /etc/stunnel/stunnel.conf
- sed -i "s|Stunnel_Port1|$Stunnel_Port1|g" /etc/stunnel/stunnel.conf
- sed -i "s|dropbear_port_c|$(netstat -tlnp | grep -i dropbear | awk '{print $4}' | cut -d: -f2 | xargs | awk '{print $2}' | head -n1)|g" /etc/stunnel/stunnel.conf
- sed -i "s|Stunnel_Port2|$Stunnel_Port2|g" /etc/stunnel/stunnel.conf
- sed -i "s|openssh_port_c|$(netstat -tlnp | grep -i ssh | awk '{print $4}' | cut -d: -f2 | xargs | awk '{print $2}' | head -n1)|g" /etc/stunnel/stunnel.conf
- sed -i "s|Stunnel_Port3|$Stunnel_Port3|g" /etc/stunnel/stunnel.conf
- sed -i "s|openssh_port_c|$(netstat -tlnp | grep -i ssh | awk '{print $4}' | cut -d: -f2 | xargs | awk '{print $2}' | head -n1)|g" /etc/stunnel/stunnel.conf
+echo -e "[\e[33mNotice\e[0m] Restarting Stunnel.."
+systemctl restart "$StunnelDir"
+}
 
- # Restarting stunnel service
- systemctl restart $StunnelDir
 
+function ConfigProxy(){
+echo -e "[\e[32mInfo\e[0m] Configuring Privoxy.."
+rm -f /etc/privoxy/config*
+cat <<'EOFprivoxy' > /etc/privoxy/config
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
+user-manual /usr/share/doc/privoxy/user-manual
+confdir /etc/privoxy
+logdir /var/log/privoxy
+filterfile default.filter
+logfile logfile
+listen-address 127.0.0.1:25800
+toggle 1
+enable-remote-toggle 0
+enable-remote-http-toggle 0
+enable-edit-actions 0
+enforce-blocks 0
+buffer-limit 4096
+max-client-connections 4000
+enable-proxy-authentication-forwarding 1
+forwarded-connect-retries 1
+accept-intercepted-requests 1
+allow-cgi-request-crunching 1
+split-large-forms 0
+keep-alive-timeout 5
+tolerate-pipelining 1
+socket-timeout 300
+EOFprivoxy
+cat <<'EOFprivoxy2' > /etc/privoxy/user.action
+{ +block }
+/
+
+{ -block }
+IP-ADDRESS
+127.0.0.1
+EOFprivoxy2
+sed -i "s|IP-ADDRESS|$(ip_address)|g" /etc/privoxy/user.action
+echo -e "[\e[32mInfo\e[0m] Configuring Squid.."
+rm -rf /etc/squid/sq*
+cat <<'EOFsquid' > /etc/squid/squid.conf
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
+
+acl VPN dst IP-ADDRESS/32
+http_access allow VPN
+http_access deny all
+http_port 0.0.0.0:8000
+http_port 0.0.0.0:8080
+acl bonv src 0.0.0.0/0.0.0.0
+no_cache deny bonv
+dns_nameservers 1.1.1.1 1.0.0.1
+visible_hostname localhost
+EOFsquid
+sed -i "s|IP-ADDRESS|$(ip_address)|g" /etc/squid/squid.conf
+
+echo -e "[\e[33mNotice\e[0m] Restarting Privoxy Service.."
+systemctl restart privoxy
+echo -e "[\e[33mNotice\e[0m] Restarting Squid Service.."
+systemctl restart squid
+
+echo -e "[\e[32mInfo\e[0m] Configuring OHPServer"
+if [[ ! -e /etc/ohpserver ]]; then
+ mkdir /etc/ohpserver
+ else
+ rm -rf /etc/ohpserver/*
+fi
+curl -4skL "https://github.com/lfasmpao/open-http-puncher/releases/download/0.1/ohpserver-linux32.zip" -o /etc/ohpserver/ohp.zip
+unzip -qq /etc/ohpserver/ohp.zip -d /etc/ohpserver
+rm -rf /etc/ohpserver/ohp.zip
+chmod +x /etc/ohpserver/ohpserver
+
+cat <<'Ohp1' > /etc/ohpserver/run
+#!/bin/bash
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
+# OHPServer startup script
+/etc/ohpserver/ohpserver -port 8085 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:701 > /etc/ohpserver/dropbear.log &
+/etc/ohpserver/ohpserver -port 8086 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:225 > /etc/ohpserver/openssh.log &
+/etc/ohpserver/ohpserver -port 8087 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:179 > /etc/ohpserver/openvpn.log &
+/etc/ohpserver/ohpserver -port 8088 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:25980 > /etc/ohpserver/openvpn.log
+Ohp1
+chmod +x /etc/ohpserver/run
+
+cat <<'Ohp2' > /etc/ohpserver/stop
+#!/bin/bash
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
+# OHPServer stop script
+lsof -t -i tcp:8085 -s tcp:listen | xargs kill 2>/dev/null ### Dropbear
+lsof -t -i tcp:8086 -s tcp:listen | xargs kill 2>/dev/null ### OpenSSH
+lsof -t -i tcp:8087 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP RSA
+lsof -t -i tcp:8088 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP EC
+Ohp2
+chmod +x /etc/ohpserver/stop
+
+cat <<'EOFohp' > /lib/systemd/system/ohpserver.service
+[Unit]
+Description=OpenHTTP Puncher Server
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStart=/bin/bash /etc/ohpserver/run 2>/dev/null
+ExecStop=/bin/bash /etc/ohpserver/stop 2>/dev/null
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOFohp
+systemctl daemon-reload &>/dev/null
+systemctl restart ohpserver.service &>/dev/null
+systemctl enable ohpserver.service &>/dev/null
+}
+
+
+function ConfigWebmin(){
+printf "%b\n" "\e[1;32m[\e[0mInfo\e[1;32m]\e[0m\e[97m running Webmin installation on background\e[0m"
+cat <<'webminEOF'> /tmp/install-webmin.bash
+#!/bin/bash
+if [[ -e /etc/webmin ]]; then
+ echo 'Webmin already installed' && exit 1
+fi
+rm -rf /etc/apt/sources.list.d/webmin*
+echo 'deb https://download.webmin.com/download/repository sarge contrib' > /etc/apt/sources.list.d/webmin.list
+apt-key del 1719003ACE3E5A41E2DE70DFD97A3AE911F63C51 &> /dev/null
+wget -qO - https://download.webmin.com/jcameron-key.asc | apt-key add - &> /dev/null
+apt update &> /dev/null
+apt install webmin -y &> /dev/null
+sed -i "s|\(ssl=\).\+|\10|" /etc/webmin/miniserv.conf
+lsof -t -i tcp:10000 -s tcp:listen | xargs kill 2>/dev/null
+systemctl restart webmin &> /dev/null
+systemctl enable webmin &> /dev/null
+webminEOF
+screen -S webmininstall -dm bash -c "bash /tmp/install-webmin.bash && rm -f /tmp/install-webmin.bash"
 }
 
 function ConfigOpenVPN(){
@@ -450,7 +505,7 @@ cat <<'EOFovpn1' > /etc/openvpn/server/server_tcp.conf
 # https://t.me/BonvScripts
 # Please star my Repository: https://github.com/Bonveio/BonvScripts
 # https://phcorner.net/threads/739298
-port 1194
+port 179
 dev tun
 proto tcp
 ca /etc/openvpn/ca.crt
@@ -842,7 +897,7 @@ client
 dev tun
 persist-tun
 proto tcp
-remote IP-ADDRESS 1194
+remote IP-ADDRESS 179
 http-proxy IP-ADDRESS 8000
 persist-remote-ip
 resolv-retry infinite
@@ -1109,838 +1164,111 @@ echo -e "[\e[33mNotice\e[0m] Restarting Nginx Service.."
 systemctl restart nginx
 }
 
-function InsProxy(){
- # Removing Duplicate privoxy config
- rm -rf /etc/privoxy/config*
-
- # Creating Privoxy server config using cat eof tricks
- cat <<'myPrivoxy' > /etc/privoxy/config
-# My Privoxy Server Config
-user-manual /usr/share/doc/privoxy/user-manual
-confdir /etc/privoxy
-logdir /var/log/privoxy
-filterfile default.filter
-logfile logfile
-listen-address 0.0.0.0:Privoxy_Port1
-listen-address 0.0.0.0:Privoxy_Port2
-toggle 1
-enable-remote-toggle 0
-enable-remote-http-toggle 0
-enable-edit-actions 0
-enforce-blocks 0
-buffer-limit 4096
-enable-proxy-authentication-forwarding 1
-forwarded-connect-retries 1
-accept-intercepted-requests 1
-allow-cgi-request-crunching 1
-split-large-forms 0
-keep-alive-timeout 5
-tolerate-pipelining 1
-socket-timeout 300
-permit-access 0.0.0.0/0 IP-ADDRESS
-myPrivoxy
-
- # Setting machine's IP Address inside of our privoxy config(security that only allows this machine to use this proxy server)
- sed -i "s|IP-ADDRESS|$IPADDR|g" /etc/privoxy/config
-
- # Setting privoxy ports
- sed -i "s|Privoxy_Port1|$Privoxy_Port1|g" /etc/privoxy/config
- sed -i "s|Privoxy_Port2|$Privoxy_Port2|g" /etc/privoxy/config
-
- # I'm setting Some Squid workarounds to prevent Privoxy's overflowing file descriptors that causing 50X error when clients trying to connect to your proxy server(thanks for this trick @homer_simpsons)
+function UnistAll(){
+ echo -e " Removing dropbear"
+ sed -i '/Port 225/d' /etc/ssh/sshd_config
+ sed -i '/Banner .*/d' /etc/ssh/sshd_config
+ systemctl restart ssh
+ systemctl stop dropbear
+ apt remove --purge dropbear -y
+ rm -f /etc/default/dropbear
+ rm -rf /etc/dropbear/*
+ echo -e " Removing stunnel"
+ systemctl stop stunnel &> /dev/null
+ systemctl stop stunnel4 &> /dev/null
+ apt remove --purge stunnel -y
+ rm -rf /etc/stunnel/*
+ rm -rf /etc/default/stunnel*
+ echo -e " Removing webmin"
+ systemctl stop webmin
+ apt remove --purge webmin -y
+ rm -rf /etc/webmin/*;
+ rm -f /etc/apt/sources.list.d/webmin*;
+ echo -e " Removing OpenVPN server and client config download site"
+ systemctl stop openvpn-server@server_tcp &>/dev/null
+ systemctl stop openvpn-server@server_udp &>/dev/null
+ systemctl stop openvpn-server@ec_server_tcp &>/dev/null
+ systemctl stop openvpn-server@ec_server_udp &>/dev/null
+ systemctl disable openvpn-server@server_tcp &>/dev/null
+ systemctl disable openvpn-server@server_udp &>/dev/null
+ systemctl disable openvpn-server@ec_server_tcp &>/dev/null
+ systemctl disable openvpn-server@ec_server_udp &>/dev/null
+ apt remove --purge openvpn -y -f
+ rm -rf /etc/openvpn/*
+ rm -rf /var/www/openvpn
+ rm -f /etc/apt/sources.list.d/openvpn*
+ rm -rf /etc/nginx/conf.d/bonveio-ovpn-config*
+ systemctl restart nginx &> /dev/null
+ echo -e "Removing squid"
  apt remove --purge squid -y
- rm -rf /etc/squid/sq*
- apt install squid -y
-
-# Squid Ports (must be 1024 or higher)
-
- cat <<mySquid > /etc/squid/squid.conf
-acl VPN dst $(wget -4qO- http://ipinfo.io/ip)/32
-http_access allow VPN
-http_access deny all
-http_port 0.0.0.0:$Proxy_Port1
-http_port 0.0.0.0:$Proxy_Port2
-coredump_dir /var/spool/squid
-dns_nameservers 1.1.1.1 1.0.0.1
-refresh_pattern ^ftp: 1440 20% 10080
-refresh_pattern ^gopher: 1440 0% 1440
-refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
-refresh_pattern . 0 20% 4320
-visible_hostname localhost
-mySquid
-
- sed -i "s|SquidCacheHelper|$Proxy_Port1|g" /etc/squid/squid.conf
- sed -i "s|SquidCacheHelper|$Proxy_Port2|g" /etc/squid/squid.conf
-
- # Starting Proxy server
- echo -e "Restarting proxy server.."
- systemctl restart privoxy
- systemctl restart squid
-
-echo -e "[\e[32mInfo\e[0m] Configuring OHPServer"
-if [[ ! -e /etc/ohpserver ]]; then
- mkdir /etc/ohpserver
- else
- rm -rf /etc/ohpserver/*
-fi
-curl -4skL "https://github.com/lfasmpao/open-http-puncher/releases/download/0.1/ohpserver-linux32.zip" -o /etc/ohpserver/ohp.zip
-unzip -qq /etc/ohpserver/ohp.zip -d /etc/ohpserver
-rm -rf /etc/ohpserver/ohp.zip
-chmod +x /etc/ohpserver/ohpserver
-
-cat <<'Ohp1' > /etc/ohpserver/run
-#!/bin/bash
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
-# OHPServer startup script
-/etc/ohpserver/ohpserver -port 8085 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:701 > /etc/ohpserver/dropbear.log &
-/etc/ohpserver/ohpserver -port 8086 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:225 > /etc/ohpserver/openssh.log &
-/etc/ohpserver/ohpserver -port 8087 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:179 > /etc/ohpserver/openvpn.log &
-/etc/ohpserver/ohpserver -port 8088 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:25980 > /etc/ohpserver/openvpn.log
-Ohp1
-chmod +x /etc/ohpserver/run
-
-cat <<'Ohp2' > /etc/ohpserver/stop
-#!/bin/bash
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
-# OHPServer stop script
-lsof -t -i tcp:8085 -s tcp:listen | xargs kill 2>/dev/null ### Dropbear
-lsof -t -i tcp:8086 -s tcp:listen | xargs kill 2>/dev/null ### OpenSSH
-lsof -t -i tcp:8087 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP RSA
-lsof -t -i tcp:8088 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP EC
-Ohp2
-chmod +x /etc/ohpserver/stop
-
-cat <<'EOFohp' > /lib/systemd/system/ohpserver.service
-[Unit]
-Description=OpenHTTP Puncher Server
-Wants=network.target
-After=network.target
-
-[Service]
-ExecStart=/bin/bash /etc/ohpserver/run 2>/dev/null
-ExecStop=/bin/bash /etc/ohpserver/stop 2>/dev/null
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-EOFohp
-systemctl daemon-reload &>/dev/null
-systemctl restart ohpserver.service &>/dev/null
-systemctl enable ohpserver.service &>/dev/null
+ rm -rf /etc/squid/*
+ echo -e "Removing privoxy"
+ apt remove --purge privoxy -y
+ rm -rf /etc/privoxy/*
+ systemctl stop badvpn-udpgw.service &>/dev/null
+ systemctl disable badvpn-udpgw.service &>/dev/null
+ rm -rf /usr/local/{share/man/man7/badvpn*,share/man/man8/badvpn*,bin/badvpn-*}
+ echo -e " Finalizing.."
+ rm -rf /etc/bonveio
+ rm -rf /etc/banner
+ systemctl disable bonveio &> /dev/null
+ rm -rf /etc/systemd/system/bonveio.service
+ rm -rf /etc/cron.d/b_reboot_job
+ rm -rf /etc/cron.d/reboot_sys
+ rm -rf /etc/cron.d/autodelete_expireduser
+ systemctl restart cron &> /dev/null
+ rm -rf /usr/local/sbin/{accounts,base-ports,base-ports-wc,base-script,bench-network,clearcache,connections,create,create_random,create_trial,delete_expired,diagnose,edit_dropbear,edit_openssh,edit_openvpn,edit_ports,edit_squi*,edit_stunne*,locked_list,menu,options,ram,reboot_sys,reboot_sys_auto,restart_services,server,set_multilogin_autokill,set_multilogin_autokill_lib,show_ports,speedtest,user_delete,user_details,user_details_lib,user_extend,user_list,user_lock,user_unlock,activate_gtm_noload,deactivate_gtm_noload}
+ rm -rf /etc/profile.d/bonv.sh
+ rm -rf /tmp/*
+ apt autoremove -y -f
+ rm -rf /etc/ohpserver
+ systemctl stop ohpserver.service &> /dev/null
+ systemctl disable ohpserver.service &> /dev/null
+ systemctl stop ohpserver-autorecon.service &>/dev/null
+ systemctl disable ohpserver-autorecon.service &>/dev/null
+ rm -rf /etc/systemd/system/ohpserver-autorecon.service
+ rm -rf /lib/systemd/system/ohpserver.service
+ rm -rf /lib/systemd/system/badvpn-udpgw.service
+ systemctl daemon-reload &>/dev/null
+ echo 3 > /proc/sys/vm/drop_caches
 }
 
-
-function ScriptMessage(){
- echo -e ""
- echo -e " (｡◕‿◕｡) $MyScriptName VPS Installer"
- echo -e " Script created by Bonveio"
- echo -e " Remoded by XAM"
- echo -e ""
+function CondomSocks(){
+#Adding condom
+ wget --no-check-certificate http://firenetvpn.net/files/bonscript/ws-socks.py -O ~/.ws-socks.py
+ wget --no-check-certificate http://firenetvpn.net/files/bonscript/ws-ssl-socks.py -O ~/.ws-ssl-socks.py
+ dos2unix ~/.ws-socks.py
+ dos2unix ~/.ws-ssl-socks.py
+ chmod +x ~/.ws-socks.py
+ chmod +x ~/.ws-ssl-socks.py
 }
 
-function service() {
-cat << PTHON > /usr/sbin/yakult
-#!/usr/bin/python
-import socket, threading, thread, select, signal, sys, time, getopt
-
-# Listen
-LISTENING_ADDR = '0.0.0.0'
-if sys.argv[1:]:
-  LISTENING_PORT = sys.argv[1]
-else:
-  LISTENING_PORT = 80
-
-# Pass
-PASS = ''
-
-# CONST
-BUFLEN = 4096 * 4
-TIMEOUT = 3600
-DEFAULT_HOST = '127.0.0.1:900'
-RESPONSE = 'HTTP/1.1 101 <font color="purple">xamjyssvpn.com|coronassh.com</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
-
-class Server(threading.Thread):
-    def __init__(self, host, port):
-        threading.Thread.__init__(self)
-        self.running = False
-        self.host = host
-        self.port = port
-        self.threads = []
-        self.threadsLock = threading.Lock()
-        self.logLock = threading.Lock()
-
-    def run(self):
-        self.soc = socket.socket(socket.AF_INET)
-        self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.soc.settimeout(2)
-        intport = int(self.port)
-        self.soc.bind((self.host, intport))
-        self.soc.listen(0)
-        self.running = True
-
-        try:
-            while self.running:
-                try:
-                    c, addr = self.soc.accept()
-                    c.setblocking(1)
-                except socket.timeout:
-                    continue
-
-                conn = ConnectionHandler(c, self, addr)
-                conn.start()
-                self.addConn(conn)
-        finally:
-            self.running = False
-            self.soc.close()
-
-    def printLog(self, log):
-        self.logLock.acquire()
-        print log
-        self.logLock.release()
-
-    def addConn(self, conn):
-        try:
-            self.threadsLock.acquire()
-            if self.running:
-                self.threads.append(conn)
-        finally:
-            self.threadsLock.release()
-
-    def removeConn(self, conn):
-        try:
-            self.threadsLock.acquire()
-            self.threads.remove(conn)
-        finally:
-            self.threadsLock.release()
-
-    def close(self):
-        try:
-            self.running = False
-            self.threadsLock.acquire()
-
-            threads = list(self.threads)
-            for c in threads:
-                c.close()
-        finally:
-            self.threadsLock.release()
-
-
-class ConnectionHandler(threading.Thread):
-    def __init__(self, socClient, server, addr):
-        threading.Thread.__init__(self)
-        self.clientClosed = False
-        self.targetClosed = True
-        self.client = socClient
-        self.client_buffer = ''
-        self.server = server
-        self.log = 'Connection: ' + str(addr)
-
-    def close(self):
-        try:
-            if not self.clientClosed:
-                self.client.shutdown(socket.SHUT_RDWR)
-                self.client.close()
-        except:
-            pass
-        finally:
-            self.clientClosed = True
-
-        try:
-            if not self.targetClosed:
-                self.target.shutdown(socket.SHUT_RDWR)
-                self.target.close()
-        except:
-            pass
-        finally:
-            self.targetClosed = True
-
-    def run(self):
-        try:
-            self.client_buffer = self.client.recv(BUFLEN)
-
-            hostPort = self.findHeader(self.client_buffer, 'X-Real-Host')
-
-            if hostPort == '':
-                hostPort = DEFAULT_HOST
-
-            split = self.findHeader(self.client_buffer, 'X-Split')
-
-            if split != '':
-                self.client.recv(BUFLEN)
-
-            if hostPort != '':
-                passwd = self.findHeader(self.client_buffer, 'X-Pass')
-				
-                if len(PASS) != 0 and passwd == PASS:
-                    self.method_CONNECT(hostPort)
-                elif len(PASS) != 0 and passwd != PASS:
-                    self.client.send('HTTP/1.1 400 WrongPass!\r\n\r\n')
-                elif hostPort.startswith('127.0.0.1') or hostPort.startswith('localhost'):
-                    self.method_CONNECT(hostPort)
-                else:
-                    self.client.send('HTTP/1.1 403 Forbidden!\r\n\r\n')
-            else:
-                print '- No X-Real-Host!'
-                self.client.send('HTTP/1.1 400 NoXRealHost!\r\n\r\n')
-
-        except Exception as e:
-            self.log += ' - error: ' + e.strerror
-            self.server.printLog(self.log)
-	    pass
-        finally:
-            self.close()
-            self.server.removeConn(self)
-
-    def findHeader(self, head, header):
-        aux = head.find(header + ': ')
-
-        if aux == -1:
-            return ''
-
-        aux = head.find(':', aux)
-        head = head[aux+2:]
-        aux = head.find('\r\n')
-
-        if aux == -1:
-            return ''
-
-        return head[:aux];
-
-    def connect_target(self, host):
-        i = host.find(':')
-        if i != -1:
-            port = int(host[i+1:])
-            host = host[:i]
-        else:
-            if self.method=='CONNECT':
-                port = 443
-            else:
-                port = sys.argv[1]
-
-        (soc_family, soc_type, proto, _, address) = socket.getaddrinfo(host, port)[0]
-
-        self.target = socket.socket(soc_family, soc_type, proto)
-        self.targetClosed = False
-        self.target.connect(address)
-
-    def method_CONNECT(self, path):
-        self.log += ' - CONNECT ' + path
-
-        self.connect_target(path)
-        self.client.sendall(RESPONSE)
-        self.client_buffer = ''
-
-        self.server.printLog(self.log)
-        self.doCONNECT()
-
-    def doCONNECT(self):
-        socs = [self.client, self.target]
-        count = 0
-        error = False
-        while True:
-            count += 1
-            (recv, _, err) = select.select(socs, [], socs, 3)
-            if err:
-                error = True
-            if recv:
-                for in_ in recv:
-		    try:
-                        data = in_.recv(BUFLEN)
-                        if data:
-			    if in_ is self.target:
-				self.client.send(data)
-                            else:
-                                while data:
-                                    byte = self.target.send(data)
-                                    data = data[byte:]
-
-                            count = 0
-			else:
-			    break
-		    except:
-                        error = True
-                        break
-            if count == TIMEOUT:
-                error = True
-            if error:
-                break
-
-
-def print_usage():
-    print 'Usage: proxy.py -p <port>'
-    print '       proxy.py -b <bindAddr> -p <port>'
-    print '       proxy.py -b 0.0.0.0 -p 80'
-
-def parse_args(argv):
-    global LISTENING_ADDR
-    global LISTENING_PORT
-    
-    try:
-        opts, args = getopt.getopt(argv,"hb:p:",["bind=","port="])
-    except getopt.GetoptError:
-        print_usage()
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print_usage()
-            sys.exit()
-        elif opt in ("-b", "--bind"):
-            LISTENING_ADDR = arg
-        elif opt in ("-p", "--port"):
-            LISTENING_PORT = int(arg)
-
-
-def main(host=LISTENING_ADDR, port=LISTENING_PORT):
-    print "\n:-------PythonProxy-------:\n"
-    print "Listening addr: " + LISTENING_ADDR
-    print "Listening port: " + str(LISTENING_PORT) + "\n"
-    print ":-------------------------:\n"
-    server = Server(LISTENING_ADDR, LISTENING_PORT)
-    server.start()
-    while True:
-        try:
-            time.sleep(2)
-        except KeyboardInterrupt:
-            print 'Stopping...'
-            server.close()
-            break
-
-#######    parse_args(sys.argv[1:])
-if __name__ == '__main__':
-    main()
-
-PTHON
-}
-
-
-function service1() {
-
-cat << END > /lib/systemd/system/yakult.service
-[Unit]
-Description=Yakult
-Documentation=https://google.com
-After=network.target nss-lookup.target
-[Service]
-Type=simple
-User=root
-NoNewPrivileges=true
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-ExecStart=/usr/bin/python -O /usr/sbin/yakult
-ProtectSystem=true
-ProtectHome=true
-RemainAfterExit=yes
-Restart=on-failure
-[Install]
-WantedBy=multi-user.target
-END
-
-}
-
-function gatorade() {
-cat << PTHON > /usr/sbin/gatorade
-#!/usr/bin/python
-import socket, threading, thread, select, signal, sys, time, getopt
-
-# Listen
-LISTENING_ADDR = '0.0.0.0'
-if sys.argv[1:]:
-  LISTENING_PORT = sys.argv[1]
-else:
-  LISTENING_PORT = 8880
-
-# Pass
-PASS = ''
-
-# CONST
-BUFLEN = 4096 * 4
-TIMEOUT = 3600
-DEFAULT_HOST = '127.0.0.1:1194'
-RESPONSE = 'HTTP/1.1 101 <font color="red">xamjyssvpn.com|coronassh.com</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
-
-class Server(threading.Thread):
-    def __init__(self, host, port):
-        threading.Thread.__init__(self)
-        self.running = False
-        self.host = host
-        self.port = port
-        self.threads = []
-        self.threadsLock = threading.Lock()
-        self.logLock = threading.Lock()
-
-    def run(self):
-        self.soc = socket.socket(socket.AF_INET)
-        self.soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.soc.settimeout(2)
-        intport = int(self.port)
-        self.soc.bind((self.host, intport))
-        self.soc.listen(0)
-        self.running = True
-
-        try:
-            while self.running:
-                try:
-                    c, addr = self.soc.accept()
-                    c.setblocking(1)
-                except socket.timeout:
-                    continue
-
-                conn = ConnectionHandler(c, self, addr)
-                conn.start()
-                self.addConn(conn)
-        finally:
-            self.running = False
-            self.soc.close()
-
-    def printLog(self, log):
-        self.logLock.acquire()
-        print log
-        self.logLock.release()
-
-    def addConn(self, conn):
-        try:
-            self.threadsLock.acquire()
-            if self.running:
-                self.threads.append(conn)
-        finally:
-            self.threadsLock.release()
-
-    def removeConn(self, conn):
-        try:
-            self.threadsLock.acquire()
-            self.threads.remove(conn)
-        finally:
-            self.threadsLock.release()
-
-    def close(self):
-        try:
-            self.running = False
-            self.threadsLock.acquire()
-
-            threads = list(self.threads)
-            for c in threads:
-                c.close()
-        finally:
-            self.threadsLock.release()
-
-
-class ConnectionHandler(threading.Thread):
-    def __init__(self, socClient, server, addr):
-        threading.Thread.__init__(self)
-        self.clientClosed = False
-        self.targetClosed = True
-        self.client = socClient
-        self.client_buffer = ''
-        self.server = server
-        self.log = 'Connection: ' + str(addr)
-
-    def close(self):
-        try:
-            if not self.clientClosed:
-                self.client.shutdown(socket.SHUT_RDWR)
-                self.client.close()
-        except:
-            pass
-        finally:
-            self.clientClosed = True
-
-        try:
-            if not self.targetClosed:
-                self.target.shutdown(socket.SHUT_RDWR)
-                self.target.close()
-        except:
-            pass
-        finally:
-            self.targetClosed = True
-
-    def run(self):
-        try:
-            self.client_buffer = self.client.recv(BUFLEN)
-
-            hostPort = self.findHeader(self.client_buffer, 'X-Real-Host')
-
-            if hostPort == '':
-                hostPort = DEFAULT_HOST
-
-            split = self.findHeader(self.client_buffer, 'X-Split')
-
-            if split != '':
-                self.client.recv(BUFLEN)
-
-            if hostPort != '':
-                passwd = self.findHeader(self.client_buffer, 'X-Pass')
-				
-                if len(PASS) != 0 and passwd == PASS:
-                    self.method_CONNECT(hostPort)
-                elif len(PASS) != 0 and passwd != PASS:
-                    self.client.send('HTTP/1.1 400 WrongPass!\r\n\r\n')
-                elif hostPort.startswith('127.0.0.1') or hostPort.startswith('localhost'):
-                    self.method_CONNECT(hostPort)
-                else:
-                    self.client.send('HTTP/1.1 403 Forbidden!\r\n\r\n')
-            else:
-                print '- No X-Real-Host!'
-                self.client.send('HTTP/1.1 400 NoXRealHost!\r\n\r\n')
-
-        except Exception as e:
-            self.log += ' - error: ' + e.strerror
-            self.server.printLog(self.log)
-	    pass
-        finally:
-            self.close()
-            self.server.removeConn(self)
-
-    def findHeader(self, head, header):
-        aux = head.find(header + ': ')
-
-        if aux == -1:
-            return ''
-
-        aux = head.find(':', aux)
-        head = head[aux+2:]
-        aux = head.find('\r\n')
-
-        if aux == -1:
-            return ''
-
-        return head[:aux];
-
-    def connect_target(self, host):
-        i = host.find(':')
-        if i != -1:
-            port = int(host[i+1:])
-            host = host[:i]
-        else:
-            if self.method=='CONNECT':
-                port = 443
-            else:
-                port = sys.argv[1]
-
-        (soc_family, soc_type, proto, _, address) = socket.getaddrinfo(host, port)[0]
-
-        self.target = socket.socket(soc_family, soc_type, proto)
-        self.targetClosed = False
-        self.target.connect(address)
-
-    def method_CONNECT(self, path):
-        self.log += ' - CONNECT ' + path
-
-        self.connect_target(path)
-        self.client.sendall(RESPONSE)
-        self.client_buffer = ''
-
-        self.server.printLog(self.log)
-        self.doCONNECT()
-
-    def doCONNECT(self):
-        socs = [self.client, self.target]
-        count = 0
-        error = False
-        while True:
-            count += 1
-            (recv, _, err) = select.select(socs, [], socs, 3)
-            if err:
-                error = True
-            if recv:
-                for in_ in recv:
-		    try:
-                        data = in_.recv(BUFLEN)
-                        if data:
-			    if in_ is self.target:
-				self.client.send(data)
-                            else:
-                                while data:
-                                    byte = self.target.send(data)
-                                    data = data[byte:]
-
-                            count = 0
-			else:
-			    break
-		    except:
-                        error = True
-                        break
-            if count == TIMEOUT:
-                error = True
-            if error:
-                break
-
-
-def print_usage():
-    print 'Usage: proxy.py -p <port>'
-    print '       proxy.py -b <bindAddr> -p <port>'
-    print '       proxy.py -b 0.0.0.0 -p 80'
-
-def parse_args(argv):
-    global LISTENING_ADDR
-    global LISTENING_PORT
-    
-    try:
-        opts, args = getopt.getopt(argv,"hb:p:",["bind=","port="])
-    except getopt.GetoptError:
-        print_usage()
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print_usage()
-            sys.exit()
-        elif opt in ("-b", "--bind"):
-            LISTENING_ADDR = arg
-        elif opt in ("-p", "--port"):
-            LISTENING_PORT = int(arg)
-
-
-def main(host=LISTENING_ADDR, port=LISTENING_PORT):
-    print "\n:-------PythonProxy-------:\n"
-    print "Listening addr: " + LISTENING_ADDR
-    print "Listening port: " + str(LISTENING_PORT) + "\n"
-    print ":-------------------------:\n"
-    server = Server(LISTENING_ADDR, LISTENING_PORT)
-    server.start()
-    while True:
-        try:
-            time.sleep(2)
-        except KeyboardInterrupt:
-            print 'Stopping...'
-            server.close()
-            break
-
-#######    parse_args(sys.argv[1:])
-if __name__ == '__main__':
-    main()
-
-PTHON
-}
-
-
-function gatorade1() {
-
-cat << END > /lib/systemd/system/gatorade.service
-[Unit]
-Description=Gatorade
-Documentation=https://google.com
-After=network.target nss-lookup.target
-[Service]
-Type=simple
-User=root
-NoNewPrivileges=true
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-ExecStart=/usr/bin/python -O /usr/sbin/gatorade
-ProtectSystem=true
-ProtectHome=true
-RemainAfterExit=yes
-Restart=on-failure
-[Install]
-WantedBy=multi-user.target
-END
-
-}
-function BBR() {
-wget -q "https://github.com/yue0706/auto_bbr/raw/main/bbr.sh" && chmod +x bbr.sh && ./bbr.sh
-sed -i '/^\*\ *soft\ *nofile\ *[[:digit:]]*/d' /etc/security/limits.conf
-sed -i '/^\*\ *hard\ *nofile\ *[[:digit:]]*/d' /etc/security/limits.conf
-echo '* soft nofile 65536' >>/etc/security/limits.conf
-echo '* hard nofile 65536' >>/etc/security/limits.conf
-echo '' > /root/.bash_history && history -c && echo '' > /var/log/syslog
-
-F1='/etc/modules-load.d/modules.conf' && { [[ $(grep -cE '^tcp_bbr$' $F1) -ge 1 ]] && echo "bbr already added" || echo "tcp_bbr" >> "$F1"; } && modprobe tcp_bbr
-F2='net.core.default_qdisc' && F3='net.ipv4.tcp_congestion_control' && sed -i "/^$F2.*/d;/^$F3.*/d" /etc/sysctl{.conf,.d/*.conf} && echo -e "${F2}=fq\n${F3}=bbr" >> /etc/sysctl.d/98-bbr.conf && sysctl --system &>/dev/null
-
-}
-
-function setting() {
-service ssh restart
-service sshd restart
-service dropbear restart
-systemctl daemon-reload
-systemctl enable yakult
-systemctl restart yakult
-systemctl daemon-reload
-systemctl enable gatorade
-systemctl restart gatorade
-}
-function slowdns() {
-apt update; apt upgrade -y; rm -rf install; wget https://raw.githubusercontent.com/xamjyss143/slow-dns/main/install; chmod +x install; ./install
-bash /etc/slowdns/slowdns-ssh
-startdns
-
-}
-function remove() {
-echo ' ' > .bash_history
-history -c
-echo ' ' > /var/log/syslog
-rm -f *
-}
-
-
-
-
-#############################
-#############################
-## Installation Process
-#############################
-## WARNING: Do not modify or edit anything
-## if you did'nt know what to do.
-## This part is too sensitive.
-#############################
-#############################
-
-
- # (For OpenVPN) Checking it this machine have TUN Module, this is the tunneling interface of OpenVPN server
- if [[ ! -e /dev/net/tun ]]; then
+function InstallScript(){
+if [[ ! -e /dev/net/tun ]]; then
+ BONV-MSG
  echo -e "[\e[1;31m×\e[0m] You cant use this script without TUN Module installed/embedded in your machine, file a support ticket to your machine admin about this matter"
  echo -e "[\e[1;31m-\e[0m] Script is now exiting..."
  exit 1
 fi
 
- # Begin Installation by Updating and Upgrading machine and then Installing all our wanted packages/services to be install.
- ScriptMessage
- sleep 2
+rm -rf /root/.bash_history && echo '' > /var/log/syslog && history -c
 
-  echo -e "\033[0;35mUpdating Libraries....\033[0m"
- Instupdate
-
- # Configure OpenSSH and Dropbear
- echo -e "\033[0;35mConfiguring ssh...\033[0m"
- InstSSH
-
- # Configure Stunnel
- echo -e "\033[0;35mConfiguring stunnel...\033[0m"
- InsStunnel
-
- # Configure Privoxy and Squid
- echo -e "\033[0;35mConfiguring proxy...\033[0m"
- InsProxy
-
- # Configure OpenVPN
- echo -e "\033[0;35mConfiguring OpenVPN...\033[0m"
- ConfigOpenVPN
-
- # Configuring Nginx OVPN config download site
- ConfigNginxOvpn
-
- # Some assistance and startup scripts
- ConfigSyscript
-
- # VPS Menu script v1.0
- ConfigMenu
-
- echo -e "\033[0;35m Installing BBR...\033[0m"
- service
- service1
- gatorade
- gatorade1
- BBR
- slowdns
-setting
-remove
+## Start Installation
+clear
+clear
+BONV-MSG
+echo -e ""
+InsEssentials
+ConfigOpenSSH
+ConfigDropbear
+ConfigStunnel
+ConfigProxy
+ConfigWebmin
+ConfigOpenVPN
+ConfigMenu
+ConfigSyscript
+ConfigNginxOvpn
+CondomSocks
 
 echo -e "[\e[32mInfo\e[0m] Finalizing installation process.."
 ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
@@ -1955,38 +1283,95 @@ clear
 clear
 clear
 bash /etc/profile.d/bonv.sh
+BONV-MSG
+echo -e ""
+echo -e "\e[38;5;46m=\e[0m\e[38;5;46m=\e[0m\e[38;5;47m S\e[0m\e[38;5;47mu\e[0m\e[38;5;48mc\e[0m\e[38;5;48m\e[0m\e[38;5;49mc\e[0m\e[38;5;49me\e[0m\e[38;5;50ms\e[0m\e[38;5;50ms\e[0m\e[38;5;51m I\e[0m\e[38;5;51mn\e[0m\e[38;5;50ms\e[0m\e[38;5;50mt\e[0m\e[38;5;49ma\e[0m\e[38;5;49ml\e[0m\e[38;5;48ml\e[0m\e[38;5;48ma\e[0m\e[38;5;47mt\e[0m\e[38;5;47mi\e[0m\e[38;5;46mo\e[0m\e[38;5;46mn \e[0m\e[38;5;47m=\e[0m\e[38;5;47m=\e[0m"
+echo -e ""
+echo -e "\e[92m Service Ports\e[0m\e[97m:\e[0m"
+echo -e "\e[92m OpenSSH\e[0m\e[97m: 22, 225\e[0m"
+echo -e "\e[92m Stunnel\e[0m\e[97m: 442, 444\e[0m"
+echo -e "\e[92m Dropbear\e[0m\e[97m: 701, 555\e[0m"
+echo -e "\e[92m Squid\e[0m\e[97m: 8000, 8080\e[0m"
+echo -e "\e[92m OpenVPN\e[0m\e[97m: 179(TCP), 25222(UDP)\e[0m"
+echo -e "\e[92m OpenVPN EC\e[0m\e[97m: 25980(TCP), 25985(UDP)\e[0m"
+echo -e "\e[92m NGiNX\e[0m\e[97m: 86\e[0m"
+echo -e "\e[92m Webmin\e[0m\e[97m: 10000\e[0m"
+echo -e "\e[92m BadVPN-udpgw\e[0m\e[97m: 7300\e[0m"
+echo -e ""
+echo -e "\e[97m NEW! OHPServer builds\e[0m"
+echo -e "\e[97m (Good for Payload bugging and any related HTTP Experiments)\e[0m"
+echo -e "\e[92m OHP+Dropbear\e[0m\e[97m: 8085\e[0m"
+echo -e "\e[92m OHP+OpenSSH\e[0m\e[97m: 8086\e[0m"
+echo -e "\e[92m OHP+OpenVPN\e[0m\e[97m: 8087\e[0m"
+echo -e "\e[92m OHP+OpenVPN Elliptic Curve\e[0m\e[97m: 8088\e[0m"
+echo -e ""
+echo -e ""
+echo -e "\e[92m OpenVPN Configs Download Site\e[0m\e[97m:\e[0m"
+echo -e "\e[97m http://$(ip_address):86\e[0m"
+echo -e ""
+echo -e "\e[92m All OpenVPN Configs Archive\e[0m\e[97m:\e[0m"
+echo -e "\e[97m http://$(ip_address)/Configs.zip\e[0m"
+echo -e ""
+echo -e ""
+echo -e " * Script by Bonveio"
+echo -e " * OHPServer by lfasmpao"
+echo -e " ©BonvScripts"
+echo -e ""
+echo -e " [Note] DO NOT RESELL THIS SCRIPT"
+echo -e " This script is under project of\n https://github.com/Bonveio/BonvScripts"
+echo -e ""
+rm -f DebianVPS-Installe*
+rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
+}
 
- # Showing script's banner message
- ScriptMessage
+source /etc/os-release > /dev/null 2>&1
+if [[ "$ID" != 'debian' ]]; then
+ BONV-MSG
+ echo -e "[\e[1;31mError\e[0m] This script is for Debian only, exting..." 
+ exit 1
+fi
 
- # Showing additional information from installating this script
- 
+if [[ "$VERSION_ID" -lt 9 ]]; then
+ BONV-MSG
+ echo -e "[\e[1;31mError\e[0m] This script is supported only on Debian 9 stretch above." 
+ exit 1
+fi
 
+if [[ $EUID -ne 0 ]]; then
+ BONV-MSG
+ echo -e "[\e[1;31mError\e[0m] This script must be run as root, exiting..."
+ exit 1
+fi
 
- echo -e " Success Installation"
+case $1 in
+ install)
+ BONV-MSG
+ InstallScript
+ exit 1
+ ;;
+ uninstall|remove)
+ BONV-MSG
+ UnistAll
+ clear
+ BONV-MSG
  echo -e ""
- echo -e " Service Ports: "
- echo -e " OpenSSH: $SSH_Port1, $SSH_Port2"
- echo -e " Stunnel: $Stunnel_Port1, $Stunnel_Port2"
- echo -e " DropbearSSH: $Dropbear_Port1, $Dropbear_Port2"
- echo -e " Privoxy: $Privoxy_Port1, $Privoxy_Port2"
- echo -e " Squid: $Proxy_Port1, $Proxy_Port2"
- echo -e " OpenVPN: $OpenVPN_Port1, $OpenVPN_Port2, $OpenVPN_Port3, $OpenVPN_Port4"
- echo -e " NGiNX: $OvpnDownload_Port"
- echo -e " DNS: $MYDNS"
- echo -ne "\033[1;33mYOUR KEY:\033[0m " && cat /root/server.pub
- echo -ne "\033[1;33mYOUR NAMESERVER:\033[0m " && cat nameserver.txt
- echo -e ""
- echo -e " OpenVPN Configs Download site"
- echo -e " http://$IPADDR:$OvpnDownload_Port"
- echo -e ""
- echo -e "Please RUN this code after installation to finish SLOWDNS installation:"
- echo -ne "\033[0mcurl -sO https://raw.githubusercontent.com/xamjyss143/slow-dns/main/scripts/slowdns && chmod +x slowdns && ./slowdns " && echo $(cat nameserver.txt /root/server.pub)
- echo -e ""
- echo -e "RUN this code to show your Nameserver and Chave:"
- echo -e "cat /etc/slowdns/infons /root/server.pub"
- echo -e ""
- echo -e " [Note] DO NOT RESELL THIS SCRIPT"
-
- # Clearing all logs from installation
- rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
+ echo -e " Uninstallation complete."
+ rm -f DebianVPS-*
+ exit 1
+ ;;
+ help|--help|-h)
+ BONV-MSG
+ echo -e " install = Install script"
+ echo -e " uninstall = Remove all services installed by this script"
+ echo -e " help = show this help message"
+ exit 1
+ ;;
+ *)
+ BONV-MSG
+ echo -e " Starting Installation"
+ echo -e " CRTL + C if you wish to cancel it"
+ sleep 5
+ InstallScript
+ exit 1
+ ;;
+esac
