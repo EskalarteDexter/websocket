@@ -336,10 +336,8 @@ systemctl enable badvpn-udpgw.service &>/dev/null
 
 fi
 badvpnEOF
-screen -S badvpninstall -dm bash -c "bash /tmp/install-badvpn.bash && rm -f /tmp/install-badvpn.bash"
+screen -S badvpninstall -dm bash -c "bash /tmp/install-badvpn.bash && rm -f /tmp/install-badvpn.bash
 }
-}
-
 
 function InstSSH(){
  # Removing some duplicated sshd server configs
