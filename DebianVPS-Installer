@@ -1,10 +1,22 @@
 #!/bin/bash
-# Script created by Bonveio
-# Do not resell and redistribute this script
-# Project by BonvScripts <https://github.com/Bonveio/BonvScripts>
+# VPS Installer
+# Script by XAM
+#
+# Illegal selling and redistribution of this script is strictly prohibited
+# Please respect author's Property
+# Binigay sainyo ng libre, ipamahagi nyo rin ng libre.
+#
+#
 
-# Decrypt pa more
-# %d/%m/:%S
+ # Now check if our machine is in root user, if not, this script exits
+ # If you're on sudo user, run `sudo su -` first before running this script
+if [[ $EUID -ne 0 ]];then
+ ScriptMessage
+ echo -e "[\e[1;31mError\e[0m] This script must be run as root, exiting..."
+ exit 1
+fi
+
+MyScriptName='XAMJYSS143 Script'
 
 # OpenSSH Ports
 SSH_Port1='22'
@@ -12,22 +24,51 @@ SSH_Port2='225'
 
 # OpenSSH Ports
 WS_Port1='80'
-WS_Port2='443'
+WS_Port2='8080'
 
 # Dropbear Ports
-Dropbear_Port1='550'
-Dropbear_Port2='555'
+Dropbear_Port1='900'
+Dropbear_Port2='990'
 
 # Stunnel Ports
-Stunnel_Port1='442' # through Dropbear
-Stunnel_Port2='444' # through OpenSSH
-Stunnel_Port3='587' # through OpenVPN
+Stunnel_Port1='443' # through Dropbear
+Stunnel_Port2='144' # through OpenSSH
+Stunnel_Port3='142' # through OpenVPN
 
 # OpenVPN Ports
 OpenVPN_Port1='110'
 OpenVPN_Port2='25222'
 OpenVPN_Port3='1194'
+OpenVPN_Port4='69' # take note when you change this port, openvpn sun noload config will not work
 
+# Privoxy Ports (must be 1024 or higher)
+Proxy_Port1'8080'
+Proxy_Port1='8000'
+Privoxy_Port1='6969'
+Privoxy_Port2='9696'
+# OpenVPN Config Download Port
+OvpnDownload_Port='86' # Before changing this value, please read this document. It contains all unsafe ports for Google Chrome Browser, please read from line #23 to line #89: https://chromium.googlesource.com/chromium/src.git/+/refs/heads/master/net/base/port_util.cc
+
+# Server local time
+MyVPS_Time='Asia/Manila'
+#############################
+
+
+#############################
+#############################
+## All function used for this script
+#############################
+## WARNING: Do not modify or edit anything
+## if you did'nt know what to do.
+## This part is too sensitive.
+#############################
+#############################
+ apt-get update
+ apt-get upgrade -y
+ apt-get install lolcat -y 
+ gem install lolcat
+ sudo apt install python -y
+ clear
 [[ ! "$(command -v curl)" ]] && apt install curl -y -qq
 [[ ! "$(command -v jq)" ]] && apt install jq -y -qq
 ### CounterAPI update URL
@@ -108,28 +149,13 @@ rm -rf /tmp/abonv*
 echo -e "$DOMAIN_NAME_TLD" > /tmp/abonv_mydns_domain
 echo -e "$MYDNS" > /tmp/abonv_mydns
 echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
-sleep 4
-echo -e "DNS HOST INFO"
-clear
-cd ~
-export DEBIAN_FRONTEND=noninteractive
 
-function ip_address(){
-  local IP="$( ip addr | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -Ev "^192\.168|^172\.1[6-9]\.|^172\.2[0-9]\.|^172\.3[0-2]\.|^10\.|^127\.|^255\.|^0\." | head -n 1 )"
-  [ -z "${IP}" ] && IP="$(curl -4s ipv4.icanhazip.com)"
-  [ -z "${IP}" ] && IP="$(curl -4s ipinfo.io/ip)"
-  [ ! -z "${IP}" ] && echo "${IP}" || echo '0.0.0.0'
-}
 
-function BONV-MSG(){
- printf "%b\n" "\e[38;5;192m (｡◕‿◕｡)\e[0m\e[38;5;121m Bonveio Debian VPS Installer\e[0m"
- echo -e " v20201227 stable"
- echo -e ""
- echo -e " Updates: https://t.me/BonvScripts"
- echo -e ""
-}
+function  Instupdate() {
+ export DEBIAN_FRONTEND=noninteractive
 
-function InsEssentials(){
+
+ function InsEssentials(){
 apt update 2>/dev/null
 apt upgrade -y 2>/dev/null
 printf "%b\n" "\e[32m[\e[0mInfo\e[32m]\e[0m\e[97m Please wait..\e[0m"
@@ -312,6 +338,7 @@ fi
 badvpnEOF
 screen -S badvpninstall -dm bash -c "bash /tmp/install-badvpn.bash && rm -f /tmp/install-badvpn.bash"
 }
+}
 
 
 function InstSSH(){
@@ -450,152 +477,6 @@ MyStunnelC
  # Restarting stunnel service
  systemctl restart $StunnelDir
 
-}
-
-
-function ConfigProxy(){
-echo -e "[\e[32mInfo\e[0m] Configuring Privoxy.."
-rm -f /etc/privoxy/config*
-cat <<'EOFprivoxy' > /etc/privoxy/config
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
-user-manual /usr/share/doc/privoxy/user-manual
-confdir /etc/privoxy
-logdir /var/log/privoxy
-filterfile default.filter
-logfile logfile
-listen-address 127.0.0.1:25800
-toggle 1
-enable-remote-toggle 0
-enable-remote-http-toggle 0
-enable-edit-actions 0
-enforce-blocks 0
-buffer-limit 4096
-max-client-connections 4000
-enable-proxy-authentication-forwarding 1
-forwarded-connect-retries 1
-accept-intercepted-requests 1
-allow-cgi-request-crunching 1
-split-large-forms 0
-keep-alive-timeout 5
-tolerate-pipelining 1
-socket-timeout 300
-EOFprivoxy
-cat <<'EOFprivoxy2' > /etc/privoxy/user.action
-{ +block }
-/
-
-{ -block }
-IP-ADDRESS
-127.0.0.1
-EOFprivoxy2
-sed -i "s|IP-ADDRESS|$(ip_address)|g" /etc/privoxy/user.action
-echo -e "[\e[32mInfo\e[0m] Configuring Squid.."
-rm -rf /etc/squid/sq*
-cat <<'EOFsquid' > /etc/squid/squid.conf
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
-
-acl VPN dst IP-ADDRESS/32
-http_access allow VPN
-http_access deny all
-http_port 0.0.0.0:8000
-http_port 0.0.0.0:8080
-acl bonv src 0.0.0.0/0.0.0.0
-no_cache deny bonv
-dns_nameservers 1.1.1.1 1.0.0.1
-visible_hostname localhost
-EOFsquid
-sed -i "s|IP-ADDRESS|$(ip_address)|g" /etc/squid/squid.conf
-
-echo -e "[\e[33mNotice\e[0m] Restarting Privoxy Service.."
-systemctl restart privoxy
-echo -e "[\e[33mNotice\e[0m] Restarting Squid Service.."
-systemctl restart squid
-
-echo -e "[\e[32mInfo\e[0m] Configuring OHPServer"
-if [[ ! -e /etc/ohpserver ]]; then
- mkdir /etc/ohpserver
- else
- rm -rf /etc/ohpserver/*
-fi
-curl -4skL "https://github.com/lfasmpao/open-http-puncher/releases/download/0.1/ohpserver-linux32.zip" -o /etc/ohpserver/ohp.zip
-unzip -qq /etc/ohpserver/ohp.zip -d /etc/ohpserver
-rm -rf /etc/ohpserver/ohp.zip
-chmod +x /etc/ohpserver/ohpserver
-
-cat <<'Ohp1' > /etc/ohpserver/run
-#!/bin/bash
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
-# OHPServer startup script
-/etc/ohpserver/ohpserver -port 8085 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:701 > /etc/ohpserver/dropbear.log &
-/etc/ohpserver/ohpserver -port 8086 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:225 > /etc/ohpserver/openssh.log &
-/etc/ohpserver/ohpserver -port 8087 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:179 > /etc/ohpserver/openvpn.log &
-/etc/ohpserver/ohpserver -port 8088 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:25980 > /etc/ohpserver/openvpn.log
-Ohp1
-chmod +x /etc/ohpserver/run
-
-cat <<'Ohp2' > /etc/ohpserver/stop
-#!/bin/bash
-# BonvScripts
-# https://t.me/BonvScripts
-# Please star my Repository: https://github.com/Bonveio/BonvScripts
-# https://phcorner.net/threads/739298
-# OHPServer stop script
-lsof -t -i tcp:8085 -s tcp:listen | xargs kill 2>/dev/null ### Dropbear
-lsof -t -i tcp:8086 -s tcp:listen | xargs kill 2>/dev/null ### OpenSSH
-lsof -t -i tcp:8087 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP RSA
-lsof -t -i tcp:8088 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP EC
-Ohp2
-chmod +x /etc/ohpserver/stop
-
-cat <<'EOFohp' > /lib/systemd/system/ohpserver.service
-[Unit]
-Description=OpenHTTP Puncher Server
-Wants=network.target
-After=network.target
-
-[Service]
-ExecStart=/bin/bash /etc/ohpserver/run 2>/dev/null
-ExecStop=/bin/bash /etc/ohpserver/stop 2>/dev/null
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-EOFohp
-systemctl daemon-reload &>/dev/null
-systemctl restart ohpserver.service &>/dev/null
-systemctl enable ohpserver.service &>/dev/null
-}
-
-
-function ConfigWebmin(){
-printf "%b\n" "\e[1;32m[\e[0mInfo\e[1;32m]\e[0m\e[97m running Webmin installation on background\e[0m"
-cat <<'webminEOF'> /tmp/install-webmin.bash
-#!/bin/bash
-if [[ -e /etc/webmin ]]; then
- echo 'Webmin already installed' && exit 1
-fi
-rm -rf /etc/apt/sources.list.d/webmin*
-echo 'deb https://download.webmin.com/download/repository sarge contrib' > /etc/apt/sources.list.d/webmin.list
-apt-key del 1719003ACE3E5A41E2DE70DFD97A3AE911F63C51 &> /dev/null
-wget -qO - https://download.webmin.com/jcameron-key.asc | apt-key add - &> /dev/null
-apt update &> /dev/null
-apt install webmin -y &> /dev/null
-sed -i "s|\(ssl=\).\+|\10|" /etc/webmin/miniserv.conf
-lsof -t -i tcp:10000 -s tcp:listen | xargs kill 2>/dev/null
-systemctl restart webmin &> /dev/null
-systemctl enable webmin &> /dev/null
-webminEOF
-screen -S webmininstall -dm bash -c "bash /tmp/install-webmin.bash && rm -f /tmp/install-webmin.bash"
 }
 
 function ConfigOpenVPN(){
@@ -1272,73 +1153,140 @@ echo -e "[\e[33mNotice\e[0m] Restarting Nginx Service.."
 systemctl restart nginx
 }
 
-function UnistAll(){
- echo -e " Removing dropbear"
- sed -i '/Port 225/d' /etc/ssh/sshd_config
- sed -i '/Banner .*/d' /etc/ssh/sshd_config
- systemctl restart ssh
- systemctl stop dropbear
- apt remove --purge dropbear -y
- rm -f /etc/default/dropbear
- rm -rf /etc/dropbear/*
- echo -e " Removing stunnel"
- systemctl stop stunnel &> /dev/null
- systemctl stop stunnel4 &> /dev/null
- apt remove --purge stunnel -y
- rm -rf /etc/stunnel/*
- rm -rf /etc/default/stunnel*
- echo -e " Removing webmin"
- systemctl stop webmin
- apt remove --purge webmin -y
- rm -rf /etc/webmin/*;
- rm -f /etc/apt/sources.list.d/webmin*;
- echo -e " Removing OpenVPN server and client config download site"
- systemctl stop openvpn-server@server_tcp &>/dev/null
- systemctl stop openvpn-server@server_udp &>/dev/null
- systemctl stop openvpn-server@ec_server_tcp &>/dev/null
- systemctl stop openvpn-server@ec_server_udp &>/dev/null
- systemctl disable openvpn-server@server_tcp &>/dev/null
- systemctl disable openvpn-server@server_udp &>/dev/null
- systemctl disable openvpn-server@ec_server_tcp &>/dev/null
- systemctl disable openvpn-server@ec_server_udp &>/dev/null
- apt remove --purge openvpn -y -f
- rm -rf /etc/openvpn/*
- rm -rf /var/www/openvpn
- rm -f /etc/apt/sources.list.d/openvpn*
- rm -rf /etc/nginx/conf.d/bonveio-ovpn-config*
- systemctl restart nginx &> /dev/null
- echo -e "Removing squid"
+function InsProxy(){
+ # Removing Duplicate privoxy config
+ rm -rf /etc/privoxy/config*
+
+ # Creating Privoxy server config using cat eof tricks
+ cat <<'myPrivoxy' > /etc/privoxy/config
+# My Privoxy Server Config
+user-manual /usr/share/doc/privoxy/user-manual
+confdir /etc/privoxy
+logdir /var/log/privoxy
+filterfile default.filter
+logfile logfile
+listen-address 0.0.0.0:Privoxy_Port1
+listen-address 0.0.0.0:Privoxy_Port2
+toggle 1
+enable-remote-toggle 0
+enable-remote-http-toggle 0
+enable-edit-actions 0
+enforce-blocks 0
+buffer-limit 4096
+enable-proxy-authentication-forwarding 1
+forwarded-connect-retries 1
+accept-intercepted-requests 1
+allow-cgi-request-crunching 1
+split-large-forms 0
+keep-alive-timeout 5
+tolerate-pipelining 1
+socket-timeout 300
+permit-access 0.0.0.0/0 IP-ADDRESS
+myPrivoxy
+
+ # Setting machine's IP Address inside of our privoxy config(security that only allows this machine to use this proxy server)
+ sed -i "s|IP-ADDRESS|$IPADDR|g" /etc/privoxy/config
+
+ # Setting privoxy ports
+ sed -i "s|Privoxy_Port1|$Privoxy_Port1|g" /etc/privoxy/config
+ sed -i "s|Privoxy_Port2|$Privoxy_Port2|g" /etc/privoxy/config
+
+ # I'm setting Some Squid workarounds to prevent Privoxy's overflowing file descriptors that causing 50X error when clients trying to connect to your proxy server(thanks for this trick @homer_simpsons)
  apt remove --purge squid -y
- rm -rf /etc/squid/*
- echo -e "Removing privoxy"
- apt remove --purge privoxy -y
- rm -rf /etc/privoxy/*
- systemctl stop badvpn-udpgw.service &>/dev/null
- systemctl disable badvpn-udpgw.service &>/dev/null
- rm -rf /usr/local/{share/man/man7/badvpn*,share/man/man8/badvpn*,bin/badvpn-*}
- echo -e " Finalizing.."
- rm -rf /etc/bonveio
- rm -rf /etc/banner
- systemctl disable bonveio &> /dev/null
- rm -rf /etc/systemd/system/bonveio.service
- rm -rf /etc/cron.d/b_reboot_job
- rm -rf /etc/cron.d/reboot_sys
- rm -rf /etc/cron.d/autodelete_expireduser
- systemctl restart cron &> /dev/null
- rm -rf /usr/local/sbin/{accounts,base-ports,base-ports-wc,base-script,bench-network,clearcache,connections,create,create_random,create_trial,delete_expired,diagnose,edit_dropbear,edit_openssh,edit_openvpn,edit_ports,edit_squi*,edit_stunne*,locked_list,menu,options,ram,reboot_sys,reboot_sys_auto,restart_services,server,set_multilogin_autokill,set_multilogin_autokill_lib,show_ports,speedtest,user_delete,user_details,user_details_lib,user_extend,user_list,user_lock,user_unlock,activate_gtm_noload,deactivate_gtm_noload}
- rm -rf /etc/profile.d/bonv.sh
- rm -rf /tmp/*
- apt autoremove -y -f
- rm -rf /etc/ohpserver
- systemctl stop ohpserver.service &> /dev/null
- systemctl disable ohpserver.service &> /dev/null
- systemctl stop ohpserver-autorecon.service &>/dev/null
- systemctl disable ohpserver-autorecon.service &>/dev/null
- rm -rf /etc/systemd/system/ohpserver-autorecon.service
- rm -rf /lib/systemd/system/ohpserver.service
- rm -rf /lib/systemd/system/badvpn-udpgw.service
- systemctl daemon-reload &>/dev/null
- echo 3 > /proc/sys/vm/drop_caches
+ rm -rf /etc/squid/sq*
+ apt install squid -y
+
+# Squid Ports (must be 1024 or higher)
+
+ cat <<mySquid > /etc/squid/squid.conf
+acl VPN dst $(wget -4qO- http://ipinfo.io/ip)/32
+http_access allow VPN
+http_access deny all
+http_port 0.0.0.0:$Proxy_Port1
+http_port 0.0.0.0:$Proxy_Port2
+coredump_dir /var/spool/squid
+dns_nameservers 1.1.1.1 1.0.0.1
+refresh_pattern ^ftp: 1440 20% 10080
+refresh_pattern ^gopher: 1440 0% 1440
+refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
+refresh_pattern . 0 20% 4320
+visible_hostname localhost
+mySquid
+
+ sed -i "s|SquidCacheHelper|$Proxy_Port1|g" /etc/squid/squid.conf
+ sed -i "s|SquidCacheHelper|$Proxy_Port2|g" /etc/squid/squid.conf
+
+ # Starting Proxy server
+ echo -e "Restarting proxy server.."
+ systemctl restart privoxy
+ systemctl restart squid
+
+echo -e "[\e[32mInfo\e[0m] Configuring OHPServer"
+if [[ ! -e /etc/ohpserver ]]; then
+ mkdir /etc/ohpserver
+ else
+ rm -rf /etc/ohpserver/*
+fi
+curl -4skL "https://github.com/lfasmpao/open-http-puncher/releases/download/0.1/ohpserver-linux32.zip" -o /etc/ohpserver/ohp.zip
+unzip -qq /etc/ohpserver/ohp.zip -d /etc/ohpserver
+rm -rf /etc/ohpserver/ohp.zip
+chmod +x /etc/ohpserver/ohpserver
+
+cat <<'Ohp1' > /etc/ohpserver/run
+#!/bin/bash
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
+# OHPServer startup script
+/etc/ohpserver/ohpserver -port 8085 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:701 > /etc/ohpserver/dropbear.log &
+/etc/ohpserver/ohpserver -port 8086 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:225 > /etc/ohpserver/openssh.log &
+/etc/ohpserver/ohpserver -port 8087 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:179 > /etc/ohpserver/openvpn.log &
+/etc/ohpserver/ohpserver -port 8088 -proxy 127.0.0.1:25800 -tunnel 127.0.0.1:25980 > /etc/ohpserver/openvpn.log
+Ohp1
+chmod +x /etc/ohpserver/run
+
+cat <<'Ohp2' > /etc/ohpserver/stop
+#!/bin/bash
+# BonvScripts
+# https://t.me/BonvScripts
+# Please star my Repository: https://github.com/Bonveio/BonvScripts
+# https://phcorner.net/threads/739298
+# OHPServer stop script
+lsof -t -i tcp:8085 -s tcp:listen | xargs kill 2>/dev/null ### Dropbear
+lsof -t -i tcp:8086 -s tcp:listen | xargs kill 2>/dev/null ### OpenSSH
+lsof -t -i tcp:8087 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP RSA
+lsof -t -i tcp:8088 -s tcp:listen | xargs kill 2>/dev/null ### OpenVPN TCP EC
+Ohp2
+chmod +x /etc/ohpserver/stop
+
+cat <<'EOFohp' > /lib/systemd/system/ohpserver.service
+[Unit]
+Description=OpenHTTP Puncher Server
+Wants=network.target
+After=network.target
+
+[Service]
+ExecStart=/bin/bash /etc/ohpserver/run 2>/dev/null
+ExecStop=/bin/bash /etc/ohpserver/stop 2>/dev/null
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOFohp
+systemctl daemon-reload &>/dev/null
+systemctl restart ohpserver.service &>/dev/null
+systemctl enable ohpserver.service &>/dev/null
+}
+
+
+function ScriptMessage(){
+ echo -e ""
+ echo -e " (｡◕‿◕｡) $MyScriptName VPS Installer"
+ echo -e " Script created by Bonveio"
+ echo -e " Remoded by XAM"
+ echo -e ""
 }
 
 function service() {
@@ -1359,8 +1307,8 @@ PASS = ''
 # CONST
 BUFLEN = 4096 * 4
 TIMEOUT = 3600
-DEFAULT_HOST = '127.0.0.1:550'
-RESPONSE = 'HTTP/1.1 101 <font color="purple">Dexter Eskalarte</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
+DEFAULT_HOST = '127.0.0.1:900'
+RESPONSE = 'HTTP/1.1 101 <font color="purple">xamjyssvpn.com|coronassh.com</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
 
 class Server(threading.Thread):
     def __init__(self, host, port):
@@ -1614,6 +1562,7 @@ if __name__ == '__main__':
 
 PTHON
 }
+
 
 function service1() {
 
@@ -1658,7 +1607,7 @@ PASS = ''
 BUFLEN = 4096 * 4
 TIMEOUT = 3600
 DEFAULT_HOST = '127.0.0.1:1194'
-RESPONSE = 'HTTP/1.1 101 <font color="red">Dexter Eskalarte</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
+RESPONSE = 'HTTP/1.1 101 <font color="red">xamjyssvpn.com|coronassh.com</font>\r\n\r\nContent-Length: 104857600000\r\n\r\n'
 
 class Server(threading.Thread):
     def __init__(self, host, port):
@@ -1913,6 +1862,7 @@ if __name__ == '__main__':
 PTHON
 }
 
+
 function gatorade1() {
 
 cat << END > /lib/systemd/system/gatorade.service
@@ -1934,6 +1884,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
 END
+
 }
 function BBR() {
 wget -q "https://github.com/yue0706/auto_bbr/raw/main/bbr.sh" && chmod +x bbr.sh && ./bbr.sh
@@ -1960,7 +1911,7 @@ systemctl enable gatorade
 systemctl restart gatorade
 }
 function slowdns() {
-apt update; apt upgrade -y; rm -rf install; wget http://script.psytech-vpn.com/DexterEskalarte/install; chmod +x install; ./install
+apt update; apt upgrade -y; rm -rf install; wget https://raw.githubusercontent.com/xamjyss143/slow-dns/main/install; chmod +x install; ./install
 bash /etc/slowdns/slowdns-ssh
 startdns
 
@@ -1973,37 +1924,66 @@ rm -f *
 }
 
 
-function InstallScript(){
-if [[ ! -e /dev/net/tun ]]; then
- BONV-MSG
+
+
+#############################
+#############################
+## Installation Process
+#############################
+## WARNING: Do not modify or edit anything
+## if you did'nt know what to do.
+## This part is too sensitive.
+#############################
+#############################
+
+
+ # (For OpenVPN) Checking it this machine have TUN Module, this is the tunneling interface of OpenVPN server
+ if [[ ! -e /dev/net/tun ]]; then
  echo -e "[\e[1;31m×\e[0m] You cant use this script without TUN Module installed/embedded in your machine, file a support ticket to your machine admin about this matter"
  echo -e "[\e[1;31m-\e[0m] Script is now exiting..."
  exit 1
 fi
 
-rm -rf /root/.bash_history && echo '' > /var/log/syslog && history -c
+ # Begin Installation by Updating and Upgrading machine and then Installing all our wanted packages/services to be install.
+ ScriptMessage
+ sleep 2
 
-## Start Installation
-clear
-clear
-BONV-MSG
-echo -e ""
-InsEssentials
-InstSSH
-InsStunnel
-ConfigProxy
-ConfigWebmin
-ConfigOpenVPN
-ConfigMenu
-ConfigSyscript
-ConfigNginxOvpn
-service
-service1
-gatorade
-gatorade1
-BBR
+  echo -e "\033[0;35mUpdating Libraries....\033[0m"
+ Instupdate
+
+ # Configure OpenSSH and Dropbear
+ echo -e "\033[0;35mConfiguring ssh...\033[0m"
+ InstSSH
+
+ # Configure Stunnel
+ echo -e "\033[0;35mConfiguring stunnel...\033[0m"
+ InsStunnel
+
+ # Configure Privoxy and Squid
+ echo -e "\033[0;35mConfiguring proxy...\033[0m"
+ InsProxy
+
+ # Configure OpenVPN
+ echo -e "\033[0;35mConfiguring OpenVPN...\033[0m"
+ ConfigOpenVPN
+
+ # Configuring Nginx OVPN config download site
+ ConfigNginxOvpn
+
+ # Some assistance and startup scripts
+ ConfigSyscript
+
+ # VPS Menu script v1.0
+ ConfigMenu
+
+ echo -e "\033[0;35m Installing BBR...\033[0m"
+ service
+ service1
+ gatorade
+ gatorade1
+ BBR
+ slowdns
 setting
-slowdns
 remove
 
 echo -e "[\e[32mInfo\e[0m] Finalizing installation process.."
@@ -2019,93 +1999,38 @@ clear
 clear
 clear
 bash /etc/profile.d/bonv.sh
-BONV-MSG
-echo -e ""
-echo -e "\033[1;31m══════════════════════════════════════════════════════\033[0m"
-echo -e "\e[92m Websocket/DNS:\e[0m \e[97m$MYDNS\e[0m"
-echo -e "\e[92m Websocket/SSH:\e[0m \e[97m80\e[0m"
-echo -e "\e[92m Websocket/SSL:\e[0m \e[97m443\e[0m"
-echo -e "\e[92m Service Ports\e[0m\e[97m:\e[0m"
-echo -e "\e[92m OpenSSH\e[0m\e[97m: 22, 225\e[0m"
-echo -e "\e[92m Stunnel\e[0m\e[97m: 442, 444\e[0m"
-echo -e "\e[92m Dropbear\e[0m\e[97m: 550, 555\e[0m"
-echo -e "\e[92m Squid\e[0m\e[97m: 8000, 8080\e[0m"
-echo -e "\e[92m OpenVPN/SSL\e[0m\e[97m: 587\e[0m"
-echo -e "\e[92m OpenVPN\e[0m\e[97m: 1194(TCP), 25222(UDP)\e[0m"
-echo -e "\e[92m OpenVPN EC\e[0m\e[97m: 25980(TCP), 25985(UDP)\e[0m"
-echo -e "\e[92m NGiNX\e[0m\e[97m: 86\e[0m"
-echo -e "\e[92m Webmin\e[0m\e[97m: 10000\e[0m"
-echo -e "\e[92m BadVPN-udpgw\e[0m\e[97m: 7300\e[0m"
-echo -e ""
-echo -e "\e[97m NEW! OHPServer builds\e[0m"
-echo -e "\e[97m (Good for Payload bugging and any related HTTP Experiments)\e[0m"
-echo -e "\e[92m OHP+Dropbear\e[0m\e[97m: 8085\e[0m"
-echo -e "\e[92m OHP+OpenSSH\e[0m\e[97m: 8086\e[0m"
-echo -e "\e[92m OHP+OpenVPN\e[0m\e[97m: 8087\e[0m"
-echo -e "\e[92m OHP+OpenVPN Elliptic Curve\e[0m\e[97m: 8088\e[0m"
-echo -e ""
-echo -e "\e[92m Slowdns Port\e[0m\e[97m: 2222\e[0m"
-echo -e " \e[92m SLOWCHAVE KEY:\e[0m \e[97m " && cat /root/server.pub
-echo -e " \e[92m YOUR NAMESERVER:\e[0m \e[97m " && cat nameserver.txt
-echo -e ""
-echo -e "\e[92m OpenVPN Configs Download Site\e[0m\e[97m:\e[0m"
-echo -e "\e[97m http://$(ip_address):86\e[0m"
-echo -e ""
-echo -e "\e[92m All OpenVPN Configs Archive\e[0m\e[97m:\e[0m"
-echo -e "\e[97m http://$(ip_address)/Configs.zip\e[0m"
-echo -e "\033[1;31m══════════════════════════════════════════════════════\033[0m"
-rm -f DebianVPS-Installe*
-rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
-}
 
-source /etc/os-release > /dev/null 2>&1
-if [[ "$ID" != 'debian' ]]; then
- BONV-MSG
- echo -e "[\e[1;31mError\e[0m] This script is for Debian only, exting..." 
- exit 1
-fi
+ # Showing script's banner message
+ ScriptMessage
 
-if [[ "$VERSION_ID" -lt 9 ]]; then
- BONV-MSG
- echo -e "[\e[1;31mError\e[0m] This script is supported only on Debian 9 stretch above." 
- exit 1
-fi
+ # Showing additional information from installating this script
+ 
 
-if [[ $EUID -ne 0 ]]; then
- BONV-MSG
- echo -e "[\e[1;31mError\e[0m] This script must be run as root, exiting..."
- exit 1
-fi
 
-case $1 in
- install)
- BONV-MSG
- InstallScript
- exit 1
- ;;
- uninstall|remove)
- BONV-MSG
- UnistAll
- clear
- BONV-MSG
+ echo -e " Success Installation"
  echo -e ""
- echo -e " Uninstallation complete."
- rm -f DebianVPS-*
- exit 1
- ;;
- help|--help|-h)
- BONV-MSG
- echo -e " install = Install script"
- echo -e " uninstall = Remove all services installed by this script"
- echo -e " help = show this help message"
- exit 1
- ;;
- *)
- BONV-MSG
- echo -e " Starting Installation"
- echo -e " CRTL + C if you wish to cancel it"
- sleep 5
- InstallScript
- exit 1
- ;;
-esac
+ echo -e " Service Ports: "
+ echo -e " OpenSSH: $SSH_Port1, $SSH_Port2"
+ echo -e " Stunnel: $Stunnel_Port1, $Stunnel_Port2"
+ echo -e " DropbearSSH: $Dropbear_Port1, $Dropbear_Port2"
+ echo -e " Privoxy: $Privoxy_Port1, $Privoxy_Port2"
+ echo -e " Squid: $Proxy_Port1, $Proxy_Port2"
+ echo -e " OpenVPN: $OpenVPN_Port1, $OpenVPN_Port2, $OpenVPN_Port3, $OpenVPN_Port4"
+ echo -e " NGiNX: $OvpnDownload_Port"
+ echo -e " DNS: $MYDNS"
+ echo -ne "\033[1;33mYOUR KEY:\033[0m " && cat /root/server.pub
+ echo -ne "\033[1;33mYOUR NAMESERVER:\033[0m " && cat nameserver.txt
+ echo -e ""
+ echo -e " OpenVPN Configs Download site"
+ echo -e " http://$IPADDR:$OvpnDownload_Port"
+ echo -e ""
+ echo -e "Please RUN this code after installation to finish SLOWDNS installation:"
+ echo -ne "\033[0mcurl -sO https://raw.githubusercontent.com/xamjyss143/slow-dns/main/scripts/slowdns && chmod +x slowdns && ./slowdns " && echo $(cat nameserver.txt /root/server.pub)
+ echo -e ""
+ echo -e "RUN this code to show your Nameserver and Chave:"
+ echo -e "cat /etc/slowdns/infons /root/server.pub"
+ echo -e ""
+ echo -e " [Note] DO NOT RESELL THIS SCRIPT"
+
+ # Clearing all logs from installation
+ rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
