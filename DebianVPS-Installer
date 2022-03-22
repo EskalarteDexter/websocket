@@ -16,7 +16,10 @@ if [[ $EUID -ne 0 ]];then
  exit 1
 fi
 
-MyScriptName='XAMJYSS143 Script'
+MyScriptName='DexterEskalarte Script'
+
+# Your SSH Banner
+SSH_Banner='http://script.psytech-vpn.com/DexterEskalarte/sshsslovpn_ws/MtkBanner'
 
 # OpenSSH Ports
 SSH_Port1='22'
