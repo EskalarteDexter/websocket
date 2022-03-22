@@ -66,8 +66,6 @@ MyVPS_Time='Asia/Manila'
 ## This part is too sensitive.
 #############################
 #############################
- apt-get update
- apt-get upgrade -y
  apt-get install lolcat -y 
  gem install lolcat
  sudo apt install python -y
@@ -79,10 +77,10 @@ COUNTER="$(curl -4sX GET "https://api.countapi.xyz/hit/BonvScripts/DebianVPS-Ins
 
 IPADDR="$(curl -4skL http://ipinfo.io/ip)"
 
-GLOBAL_API_KEY="03d0feacc806be806ec10d2914b77dab0de64"
-CLOUDFLARE_EMAIL="mediatekvpn04@gmail.com"
-DOMAIN_NAME_TLD="dextereskakarte.shop"
-DOMAIN_ZONE_ID="8c86e28dbcf561319cc3191a6036f6fb"
+GLOBAL_API_KEY="47a635b2dbb52ea8bf02f238bad0a99e595ba"
+CLOUDFLARE_EMAIL="ennaojselarom@gmail.com"
+DOMAIN_NAME_TLD="dextereskalarte-dns.xyz"
+DOMAIN_ZONE_ID="b7c98b11bbbcfcb84e409d2229cdf07b"
 ### DNS hostname / Payload here
 ## Setting variable
 
@@ -152,7 +150,6 @@ rm -rf /tmp/abonv*
 echo -e "$DOMAIN_NAME_TLD" > /tmp/abonv_mydns_domain
 echo -e "$MYDNS" > /tmp/abonv_mydns
 echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
-
 
 function  Instupdate() {
  export DEBIAN_FRONTEND=noninteractive
