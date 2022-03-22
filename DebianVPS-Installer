@@ -2024,11 +2024,12 @@ bash /etc/profile.d/bonv.sh
  echo -e " OpenVPN Configs Download site"
  echo -e " http://$IPADDR:$OvpnDownload_Port"
  echo -e ""
- echo -e "Please RUN this code after installation to finish SLOWDNS installation:"
- echo -ne "\033[0mcurl -sO https://raw.githubusercontent.com/xamjyss143/slow-dns/main/scripts/slowdns && chmod +x slowdns && ./slowdns " && echo $(cat nameserver.txt /root/server.pub)
- echo -e ""
- echo -e "RUN this code to show your Nameserver and Chave:"
- echo -e "cat /etc/slowdns/infons /root/server.pub"
+ echo -e "\e[97m NEW! OHPServer builds\e[0m"
+ echo -e "\e[97m (Good for Payload bugging and any related HTTP Experiments)\e[0m"
+ echo -e "\e[92m OHP+Dropbear\e[0m\e[97m: 8085\e[0m"
+ echo -e "\e[92m OHP+OpenSSH\e[0m\e[97m: 8086\e[0m"
+ echo -e "\e[92m OHP+OpenVPN\e[0m\e[97m: 8087\e[0m"
+ echo -e "\e[92m OHP+OpenVPN Elliptic Curve\e[0m\e[97m: 8088\e[0m"
  echo -e ""
  echo -e " [Note] DO NOT RESELL THIS SCRIPT"
 
