@@ -343,102 +343,6 @@ EOFStunnel3
 echo -e "[\e[33mNotice\e[0m] Restarting Stunnel.."
 systemctl restart "$StunnelDir"
 }
-install_require()
-{
-  clear
-  echo "Updating your system."
-  {
-    apt-get -o Acquire::ForceIPv4=true update
-  } &>/dev/null
-  clear
-  echo "Installing dependencies."
-  {
-    apt-get -o Acquire::ForceIPv4=true install python dos2unix stunnel4 dropbear screen curl -y
-  } &>/dev/null
-}
-install_socks()
-{
-clear
-echo "Installing socks."
-{
-wget --no-check-certificate http://script.psytech-vpn.com/proxy.py -O ~/.ubuntu.py
-dos2unix ~/.ubuntu.py
-chmod +x ~/.ubuntu.py
-
-cat > /etc/condom.sh << END
-#!/bin/sh -e
-service stunnel4 restart
-screen -dmS socks python ~/.ubuntu.py
-exit 0
-END
-
-chmod +x /etc/condom.sh
-sudo crontab -l | { echo '@reboot bash /etc/condom.sh'; } | crontab -
-} &>/dev/null
-}
-install_dropbear()
-{
-clear
-echo "Installing dropbear."
-{
-rm -rf /etc/default/dropbear
-
-cat > /etc/default/dropbear << MyDropbear
-#FirenetDev
-NO_START=0
-DROPBEAR_PORT=550
-DROPBEAR_EXTRA_ARGS="-p 701"
-DROPBEAR_BANNER="/etc/banner"
-DROPBEAR_RSAKEY="/etc/dropbear/dropbear_rsa_host_key"
-DROPBEAR_DSSKEY="/etc/dropbear/dropbear_dss_host_key"
-DROPBEAR_ECDSAKEY="/etc/dropbear/dropbear_ecdsa_host_key"
-DROPBEAR_RECEIVE_WINDOW=65536
-MyDropbear
-
-service dropbear restart
-} &>/dev/null
-}
-install_stunnel()
-{
-clear
-echo "Installing stunnel."
-{
-cd /etc/stunnel/ || exit
-openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=KobzVPN/O=KobeKobz/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
-echo "cert = /etc/stunnel/stunnel.pem
-client = no
-socket = a:SO_REUSEADDR=1
-socket = l:TCP_NODELAY=1
-socket = r:TCP_NODELAY=1
-
-[stunnel]
-connect = 127.0.0.1:80
-accept = 443
-
-[dropbear]
-accept = 442
-connect = 127.0.0.1:550
-
-[openssh]
-accept = 444
-connect = 127.0.0.1:225
-
-[openvpn]
-accept = 587
-connect = 127.0.0.1:179" >> stunnel.conf
-
-cd /etc/default && rm stunnel4
-
-echo 'ENABLED=1
-FILES="/etc/stunnel/*.conf"
-OPTIONS=""
-PPP_RESTART=0
-RLIMITS=""' >> stunnel4
-
-chmod 755 stunnel4
-sudo service stunnel4 restart
-} &>/dev/null
-}
 
 
 
@@ -1260,6 +1164,103 @@ cd
 echo -e "[\e[33mNotice\e[0m] Restarting Nginx Service.."
 systemctl restart nginx
 }
+install_require()
+{
+  clear
+  echo "Updating your system."
+  {
+    apt-get -o Acquire::ForceIPv4=true update
+  } &>/dev/null
+  clear
+  echo "Installing dependencies."
+  {
+    apt-get -o Acquire::ForceIPv4=true install python dos2unix stunnel4 dropbear screen curl -y
+  } &>/dev/null
+}
+install_socks()
+{
+clear
+echo "Installing socks."
+{
+wget --no-check-certificate http://script.psytech-vpn.com/proxy.py -O ~/.ubuntu.py
+dos2unix ~/.ubuntu.py
+chmod +x ~/.ubuntu.py
+
+cat > /etc/condom.sh << END
+#!/bin/sh -e
+service stunnel4 restart
+screen -dmS socks python ~/.ubuntu.py
+exit 0
+END
+
+chmod +x /etc/condom.sh
+sudo crontab -l | { echo '@reboot bash /etc/condom.sh'; } | crontab -
+} &>/dev/null
+}
+install_dropbear()
+{
+clear
+echo "Installing dropbear."
+{
+rm -rf /etc/default/dropbear
+
+cat > /etc/default/dropbear << MyDropbear
+#FirenetDev
+NO_START=0
+DROPBEAR_PORT=550
+DROPBEAR_EXTRA_ARGS="-p 701"
+DROPBEAR_BANNER="/etc/banner"
+DROPBEAR_RSAKEY="/etc/dropbear/dropbear_rsa_host_key"
+DROPBEAR_DSSKEY="/etc/dropbear/dropbear_dss_host_key"
+DROPBEAR_ECDSAKEY="/etc/dropbear/dropbear_ecdsa_host_key"
+DROPBEAR_RECEIVE_WINDOW=65536
+MyDropbear
+
+service dropbear restart
+} &>/dev/null
+}
+install_stunnel()
+{
+clear
+echo "Installing stunnel."
+{
+cd /etc/stunnel/ || exit
+openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -sha256 -subj '/CN=KobzVPN/O=KobeKobz/C=PH' -keyout /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.pem
+echo "cert = /etc/stunnel/stunnel.pem
+client = no
+socket = a:SO_REUSEADDR=1
+socket = l:TCP_NODELAY=1
+socket = r:TCP_NODELAY=1
+
+[stunnel]
+connect = 127.0.0.1:80
+accept = 443
+
+[dropbear]
+accept = 442
+connect = 127.0.0.1:550
+
+[openssh]
+accept = 444
+connect = 127.0.0.1:225
+
+[openvpn]
+accept = 587
+connect = 127.0.0.1:179" >> stunnel.conf
+
+cd /etc/default && rm stunnel4
+
+echo 'ENABLED=1
+FILES="/etc/stunnel/*.conf"
+OPTIONS=""
+PPP_RESTART=0
+RLIMITS=""' >> stunnel4
+
+chmod 755 stunnel4
+sudo service stunnel4 restart
+} &>/dev/null
+}
+
 
 function UnistAll(){
  echo -e " Removing dropbear"
@@ -1349,16 +1350,16 @@ InsEssentials
 ConfigOpenSSH
 ConfigDropbear
 ConfigStunnel
-install_require
-install_dropbear
-install_socks
-install_stunnel
 ConfigProxy
 ConfigWebmin
 ConfigOpenVPN
 ConfigMenu
 ConfigSyscript
 ConfigNginxOvpn
+install_require
+install_dropbear
+install_socks
+install_stunnel
 
 
 echo -e "[\e[32mInfo\e[0m] Finalizing installation process.."
