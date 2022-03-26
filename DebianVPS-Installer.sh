@@ -838,7 +838,6 @@ echo 'screenfetch -p -A Debian' >> /etc/profile.d/dextereskalarte.sh
 chmod +x /etc/profile.d/dextereskalarte.sh
 }
 function ScriptMessage(){
- echo -e "        \e[0;97m＝＝＝Debian VPS Installer ＝＝＝\e[0m"
  eecho -e "\033[1;31m═════════════════════════════════════════════════════\033[0m"
 echo '                                                              
    ██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗        
