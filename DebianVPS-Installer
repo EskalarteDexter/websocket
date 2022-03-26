@@ -496,6 +496,15 @@ fi
  firewall-cmd --quiet --permanent --add-service=squid
  firewall-cmd --quiet --reload
  echo 1 > /proc/sys/net/ipv4/ip_forward
+ 
+  # Iptables Rule for OpenVPN server
+iptables -A INPUT -i tap+ -j ACCEPT
+iptables -A FORWARD -i tap+ -j ACCEPT
+iptables -t nat -A POSTROUTING -s 192.168.2.0/24 -o eth0 -j MASQUERADE
+ip rule add fwmark 0x50 table 200
+ip route add table 200 default via 192.168.2.1
+iptables -t mangle -A OUTPUT -j MARK -p tcp --dport 80 --set-mark 80
+ 
  systemctl start openvpn@server_tcp
  systemctl start openvpn@server_udp
  systemctl enable openvpn@server_tcp
