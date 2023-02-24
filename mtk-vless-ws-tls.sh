@@ -1,4 +1,10 @@
 #!/bin/bash -e
+echo
+echo "=== azadrah.org ==="
+echo "=== https://github.com/azadrah-org ==="
+echo "=== V2ray with Caddy [Vless/Vmess+WS+TLS] (Ubuntu 22.04) ==="
+echo
+sleep 3
 
 red='\e[91m'
 green='\e[92m'
