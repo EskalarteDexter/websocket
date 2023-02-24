@@ -7,7 +7,6 @@ echo "
 ██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗
 ██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║  
 "
-echo
 echo "=== V2ray MTK with Caddy [Vless/Vmess+WS+TLS] (Ubuntu 22.04) ==="
 echo
 sleep 3
