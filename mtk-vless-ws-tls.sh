@@ -1,8 +1,15 @@
 #!/bin/bash
 echo
-echo "=== azadrah.org ==="
-echo "=== https://github.com/azadrah-org ==="
-echo "=== V2ray with Caddy [Vless/Vmess+WS+TLS] (Ubuntu 22.04) ==="
+echo -e "                $GREEN
+
+██████╗ ███████╗██╗  ██╗████████╗███████╗██████╗ 
+██╔══██╗██╔════╝╚██╗██╔╝╚══██╔══╝██╔════╝██╔══██╗
+██║  ██║█████╗   ╚███╔╝    ██║   █████╗  ██████╔╝
+██║  ██║██╔══╝   ██╔██╗    ██║   ██╔══╝  ██╔══██╗
+██████╔╝███████╗██╔╝ ██╗   ██║   ███████╗██║  ██║              
+
+$RESET"
+echo "=== V2ray MTK with Caddy [Vless/Vmess+WS+TLS] (Ubuntu 22.04) ==="
 echo
 sleep 3
 
