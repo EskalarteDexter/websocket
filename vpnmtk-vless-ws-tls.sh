@@ -1,9 +1,4 @@
 #!/bin/bash -e
-echo
-echo "=== Dexter Eskalarte ==="
-echo "=== V2ray MTK with Caddy [Vless/Vmess+WS+TLS] (Ubuntu 22.04) ==="
-echo
-sleep 3
 
 red='\e[91m'
 green='\e[92m'
