@@ -1723,11 +1723,4 @@ case $1 in
  exit 1
  ;;
  *)
- BONV-MSG
- echo -e " Starting Installation"
- echo -e " CRTL + C if you wish to cancel it"
- sleep 5
- InstallScript
- exit 1
- ;;
 esac
