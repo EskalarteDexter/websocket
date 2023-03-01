@@ -7,6 +7,14 @@
 # Decrypt pa more
 # %d/%m/:%S
 
+
+apt-get update
+ apt-get upgrade -y
+ apt-get install lolcat -y 
+ gem install lolcat
+ sudo apt install python -y
+ clear
+ 
 [[ ! "$(command -v curl)" ]] && apt install curl -y -qq
 [[ ! "$(command -v jq)" ]] && apt install jq -y -qq
 ### CounterAPI update URL
