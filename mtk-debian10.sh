@@ -7,7 +7,12 @@
 # Decrypt pa more
 # %d/%m/:%S
 
+[[ ! "$(command -v curl)" ]] && apt install curl -y -qq
+[[ ! "$(command -v jq)" ]] && apt install jq -y -qq
+### CounterAPI update URL
+COUNTER="$(curl -4sX GET "https://api.countapi.xyz/hit/BonvScripts/DebianVPS-Installer" | jq -r '.value')"
 
+IPADDR="$(curl -4skL http://ipinfo.io/ip)"
 
 GLOBAL_API_KEY="8fbc6edca85d2f064f7ece2f48c4cef88ddf9"
 CLOUDFLARE_EMAIL="mtkdeveloper24@gmail.com"
