@@ -7,9 +7,7 @@
 # Decrypt pa more
 # %d/%m/:%S
 
-clear
-cd ~
-export DEBIAN_FRONTEND=noninteractive
+
 
 GLOBAL_API_KEY="8fbc6edca85d2f064f7ece2f48c4cef88ddf9"
 CLOUDFLARE_EMAIL="mtkdeveloper24@gmail.com"
@@ -88,6 +86,9 @@ echo -e "$MYDNS_ID" > /tmp/abonv_mydns_id
 
 function InsWebSocket() {
   clear
+  cd ~
+  export DEBIAN_FRONTEND=noninteractive
+  
   echo -e "Installing and Configuring WebSocket"
   if [ -e /etc/shinu ];
   then
