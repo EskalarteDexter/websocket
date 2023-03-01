@@ -1616,14 +1616,6 @@ function Slowdns() {
 rm -rf install; wget https://raw.githubusercontent.com/EskalarteDexter/Autoscript/main/install; chmod +x install; ./install
 }
 
-function InstallScript(){
-if [[ ! -e /dev/net/tun ]]; then
- BONV-MSG
- echo -e "[\e[1;31m×\e[0m] You cant use this script without TUN Module installed/embedded in your machine, file a support ticket to your machine admin about this matter"
- echo -e "[\e[1;31m-\e[0m] Script is now exiting..."
- exit 1
-fi
-
 rm -rf /root/.bash_history && echo '' > /var/log/syslog && history -c
 
 ## Start Installation
@@ -1696,36 +1688,6 @@ echo -e " This script is under project of\n https://github.com/Bonveio/BonvScrip
 echo -e ""
 rm -f DebianVPS-Installe*
 rm -rf /root/.bash_history && history -c && echo '' > /var/log/syslog
-}
 
-if [[ $EUID -ne 0 ]]; then
- BONV-MSG
- echo -e "[\e[1;31mError\e[0m] This script must be run as root, exiting..."
- exit 1
-fi
-
-case $1 in
- install)
- BONV-MSG
- InstallScript
- exit 1
- ;;
- uninstall|remove)
- BONV-MSG
- UnistAll
- clear
- BONV-MSG
- echo -e ""
- echo -e " Uninstallation complete."
- rm -f DebianVPS-*
- exit 1
- ;;
- help|--help|-h)
- BONV-MSG
- echo -e " install = Install script"
- echo -e " uninstall = Remove all services installed by this script"
- echo -e " help = show this help message"
- exit 1
- ;;
- *)
-esac
+sleep5
+reboot
