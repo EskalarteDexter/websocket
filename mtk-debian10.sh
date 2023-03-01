@@ -11,10 +11,10 @@ clear
 cd ~
 export DEBIAN_FRONTEND=noninteractive
 
-GLOBAL_API_KEY="6557c266dd16ba84158271a5351817aa17b03"
-CLOUDFLARE_EMAIL="moralesroden5@gmail.com"
-DOMAIN_NAME_TLD="dex-websocket.shop"
-DOMAIN_ZONE_ID="3cadf752cd3323a40c0009f8649149a1"
+GLOBAL_API_KEY="8fbc6edca85d2f064f7ece2f48c4cef88ddf9"
+CLOUDFLARE_EMAIL="mtkdeveloper24@gmail.com"
+DOMAIN_NAME_TLD="mediatekvpn.xyz"
+DOMAIN_ZONE_ID="6dd688f9078a39b6d25201c827816848"
 ### DNS hostname / Payload here
 ## Setting variable
 
